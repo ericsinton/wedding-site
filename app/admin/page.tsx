@@ -92,7 +92,6 @@ export default function AdminDashboard() {
     fetchData()
   }
 
-  // Stats
   const totalInvited = parties.reduce((sum, p) => sum + p.max_guests, 0)
   const totalResponded = parties.filter(p => p.rsvp_submitted_at).length
   const totalAttending = parties.flatMap(p => p.guests).filter(g => g.attending).length
