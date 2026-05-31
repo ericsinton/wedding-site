@@ -29,6 +29,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [editingGuest, setEditingGuest] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<Partial<Guest>>({})
+  const [newParty, setNewParty] = useState({ party_name: '', code: '', max_guests: '2' })
+  const [addError, setAddError] = useState('')
+  const [addSuccess, setAddSuccess] = useState('')
+  const [adding, setAdding] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -68,10 +72,55 @@ export default function AdminDashboard() {
     router.push('/admin/login')
   }
 
+  const handleAddParty = async () => {
+    setAddError('')
+    setAddSuccess('')
+    setAdding(true)
+
+    if (!newParty.party_name.trim()) {
+      setAddError('Please enter a party name.')
+      setAdding(false)
+      return
+    }
+    if (!newParty.code.trim()) {
+      setAddError('Please enter a code.')
+      setAdding(false)
+      return
+    }
+
+    const { error } = await supabase.from('guest_parties').insert({
+      party_name: newParty.party_name.trim(),
+      code: newParty.code.toUpperCase().trim(),
+      max_guests: parseInt(newParty.max_guests),
+    })
+
+    if (error) {
+      if (error.message.includes('unique')) {
+        setAddError('That code is already in use. Please choose a different one.')
+      } else {
+        setAddError('Something went wrong. Please try again.')
+      }
+      setAdding(false)
+      return
+    }
+
+    setAddSuccess(`${newParty.party_name} added successfully.`)
+    setNewParty({ party_name: '', code: '', max_guests: '2' })
+    setAdding(false)
+    fetchData()
+  }
+
   const handleDeletePartyRsvp = async (partyId: string) => {
     if (!confirm('Reset this RSVP? This will delete all guest responses for this party.')) return
     await supabase.from('guests').delete().eq('party_id', partyId)
     await supabase.from('guest_parties').update({ rsvp_submitted_at: null }).eq('id', partyId)
+    fetchData()
+  }
+
+  const handleDeleteParty = async (partyId: string, partyName: string) => {
+    if (!confirm(`Completely remove ${partyName} from the guest list? This cannot be undone.`)) return
+    await supabase.from('guests').delete().eq('party_id', partyId)
+    await supabase.from('guest_parties').delete().eq('id', partyId)
     fetchData()
   }
 
@@ -147,6 +196,53 @@ export default function AdminDashboard() {
         <div className="meal-tally-row">
           <span>Vegetarian</span>
           <span className="meal-tally-count">{mealCounts.vegetarian}</span>
+        </div>
+      </div>
+
+      <div className="meal-tally" style={{ marginBottom: '2.5rem' }}>
+        <p className="meal-tally-title">Add Guest Party</p>
+        {addError && <p className="rsvp-error">{addError}</p>}
+        {addSuccess && <p style={{ fontSize: '13px', color: 'var(--sage)', marginBottom: '1rem' }}>{addSuccess}</p>}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '0.75rem', alignItems: 'end' }}>
+          <div>
+            <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Party Name</label>
+            <input
+              className="edit-input"
+              placeholder="Enter party name here"
+              value={newParty.party_name}
+              onChange={e => setNewParty(p => ({ ...p, party_name: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Code</label>
+            <input
+              className="edit-input"
+              placeholder="Enter code here"
+              value={newParty.code}
+              onChange={e => setNewParty(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+            />
+          </div>
+          <div>
+            <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Seats</label>
+            <select
+              className="edit-select"
+              value={newParty.max_guests}
+              onChange={e => setNewParty(p => ({ ...p, max_guests: e.target.value }))}
+              style={{ width: '80px' }}
+            >
+              {[1,2,3,4,5,6,7,8].map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+          <button
+            className="btn-primary"
+            onClick={handleAddParty}
+            disabled={adding}
+            style={{ whiteSpace: 'nowrap', height: '36px' }}
+          >
+            {adding ? 'Adding...' : 'Add Party'}
+          </button>
         </div>
       </div>
 
@@ -251,10 +347,17 @@ export default function AdminDashboard() {
                   <button
                     className="admin-btn admin-btn-danger"
                     onClick={() => handleDeletePartyRsvp(party.id)}
+                    style={{ display: 'block', marginBottom: '0.5rem' }}
                   >
                     Reset RSVP
                   </button>
                 )}
+                <button
+                  className="admin-btn admin-btn-danger"
+                  onClick={() => handleDeleteParty(party.id, party.party_name)}
+                >
+                  Remove Party
+                </button>
               </td>
             </tr>
           ))}
