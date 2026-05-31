@@ -1,10 +1,24 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useAuth } from '../lib/useAuth'
+import { useRouter } from 'next/navigation'
+import { getCode } from '../lib/useAuth'
 
 export default function Home() {
-  useAuth()
+  const router = useRouter()
+  const [authed, setAuthed] = useState(false)
+
+  useEffect(() => {
+    const code = getCode()
+    if (!code) {
+      router.push('/')
+    } else {
+      setAuthed(true)
+    }
+  }, [router])
+
+  if (!authed) return null
 
   return (
     <>
