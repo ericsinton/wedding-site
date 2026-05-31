@@ -56,11 +56,6 @@ export default function Home() {
       </section>
 
       <section className="message-section">
-        <p className="section-body">
-          After years of adventures, laughter, and building a life together, we&apos;re ready
-          to celebrate with the people who mean the most to us. Use this site to RSVP,
-          find travel info, and learn a little more about our story.
-        </p>
         <Link href="/rsvp" className="btn-primary">RSVP</Link>
         <div style={{ marginTop: '4rem' }}>
           <div className="photo-grid">
