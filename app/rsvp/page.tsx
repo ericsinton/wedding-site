@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
+import { useAuth, getCode } from '../lib/useAuth'
 
 type Party = {
   id: string
@@ -20,26 +22,33 @@ type GuestForm = {
 }
 
 export default function RSVPPage() {
-  const [step, setStep] = useState<'code' | 'form' | 'confirmed'>('code')
-  const [code, setCode] = useState('')
+  useAuth()
+  const router = useRouter()
+  const [step, setStep] = useState<'loading' | 'form' | 'confirmed'>('loading')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [party, setParty] = useState<Party | null>(null)
   const [guests, setGuests] = useState<GuestForm[]>([])
 
-  const handleCodeSubmit = async () => {
-    setError('')
-    setLoading(true)
+  useEffect(() => {
+    loadParty()
+  }, [])
+
+  const loadParty = async () => {
+    const code = getCode()
+    if (!code) {
+      router.push('/')
+      return
+    }
 
     const { data: partyData, error: partyError } = await supabase
       .from('guest_parties')
       .select('*')
-      .eq('code', code.toUpperCase().trim())
+      .eq('code', code)
       .single()
 
     if (partyError || !partyData) {
-      setError("We couldn't find that code. Please check your save-the-date and try again.")
-      setLoading(false)
+      router.push('/')
       return
     }
 
@@ -63,7 +72,6 @@ export default function RSVPPage() {
     setParty(partyData)
     setGuests(slots)
     setStep('form')
-    setLoading(false)
   }
 
   const updateGuest = (index: number, field: keyof GuestForm, value: string | boolean | null) => {
@@ -124,6 +132,12 @@ export default function RSVPPage() {
     setLoading(false)
   }
 
+  if (step === 'loading') return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--warm-white)' }}>
+      <p style={{ color: 'var(--muted)', fontFamily: 'Cormorant Garamond, serif', fontSize: '24px' }}>Loading...</p>
+    </div>
+  )
+
   return (
     <>
       <nav>
@@ -135,33 +149,6 @@ export default function RSVPPage() {
       </nav>
 
       <div className="rsvp-page">
-
-        {step === 'code' && (
-          <>
-            <p className="rsvp-eyebrow">RSVP</p>
-            <h1 className="rsvp-heading">Find your invitation</h1>
-            <p className="rsvp-subheading">Enter the code from your save-the-date</p>
-            <div className="rsvp-card">
-              {error && <p className="rsvp-error">{error}</p>}
-              <input
-                className="rsvp-input"
-                placeholder="Enter your code"
-                value={code}
-                onChange={e => setCode(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleCodeSubmit()}
-              />
-              <button
-                className="btn-primary"
-                style={{ width: '100%' }}
-                onClick={handleCodeSubmit}
-                disabled={loading || !code.trim()}
-              >
-                {loading ? 'Looking up...' : 'Continue'}
-              </button>
-            </div>
-          </>
-        )}
-
         {step === 'form' && party && (
           <>
             <p className="rsvp-eyebrow">RSVP</p>
@@ -240,10 +227,9 @@ export default function RSVPPage() {
               Your RSVP has been received. We can&apos;t wait to celebrate with you
               at The Lakehouse on April 3rd, 2027.
             </p>
-            <Link href="/" className="btn-primary">Back to home</Link>
+            <Link href="/home" className="btn-primary">Back to home</Link>
           </div>
         )}
-
       </div>
     </>
   )
