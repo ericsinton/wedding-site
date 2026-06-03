@@ -5,7 +5,7 @@ export function useAuth() {
   const router = useRouter()
 
   useEffect(() => {
-    const code = localStorage.getItem('weddingCode')
+    const code = sessionStorage.getItem('weddingCode')
     if (!code) {
       router.push('/')
     }
@@ -13,14 +13,14 @@ export function useAuth() {
 }
 
 export function saveCode(code: string) {
-  localStorage.setItem('weddingCode', code)
+  sessionStorage.setItem('weddingCode', code)
 }
 
 export function getCode(): string | null {
   if (typeof window === 'undefined') return null
-  return localStorage.getItem('weddingCode')
+  return sessionStorage.getItem('weddingCode')
 }
 
 export function clearCode() {
-  localStorage.removeItem('weddingCode')
+  sessionStorage.removeItem('weddingCode')
 }
