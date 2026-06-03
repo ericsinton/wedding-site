@@ -18,6 +18,7 @@ type GuestForm = {
   id: string
   name: string | null
   is_primary: boolean
+  isPreFilled: boolean
   attending: boolean | null
   meal_choice: string
   dietary_restrictions: string
@@ -47,14 +48,15 @@ export default function RSVPPage() {
       .order('is_primary', { ascending: false })
 
     setParty(partyData)
-    setGuests((existingGuests || []).map(g => ({
-      id: g.id,
-      name: g.name,
-      is_primary: g.is_primary,
-      attending: g.attending,
-      meal_choice: g.meal_choice || '',
-      dietary_restrictions: g.dietary_restrictions || '',
-    })))
+setGuests((existingGuests || []).map(g => ({
+  id: g.id,
+  name: g.name,
+  is_primary: g.is_primary,
+  isPreFilled: !!g.name,
+  attending: g.attending,
+  meal_choice: g.meal_choice || '',
+  dietary_restrictions: g.dietary_restrictions || '',
+})))
     setStep('form')
   }
 
@@ -128,22 +130,24 @@ export default function RSVPPage() {
             <div className="rsvp-card">
               {guests.map((guest, i) => (
                 <div key={guest.id} className="guest-slot">
-                  {guest.name ? (
-                    <p style={{
-                      fontFamily: 'Cormorant Garamond, serif',
-                      fontSize: '20px',
-                      fontWeight: 400,
-                      color: 'var(--bark)',
-                      marginBottom: '1rem'
-                    }}>
-                      {guest.name}
-                    </p>
-                  ) : (
-                    <input
-                      className="rsvp-input"
-                      placeholder="Guest name"
-                      value={guest.name || ''}
-                      onChange={e => updateGuest(i, 'name', e.target.value)}
+{guest.isPreFilled ? (
+  <p style={{
+    fontFamily: 'Cormorant Garamond, serif',
+    fontSize: '20px',
+    fontWeight: 400,
+    color: 'var(--bark)',
+    marginBottom: '1rem'
+  }}>
+    {guest.name}
+  </p>
+) : (
+  <input
+    className="rsvp-input"
+    placeholder="Your plus one's name"
+    value={guest.name || ''}
+    onChange={e => updateGuest(i, 'name', e.target.value)}
+  />
+)}
                     />
                   )}
                   <div className="attending-toggle">
