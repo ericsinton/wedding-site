@@ -29,40 +29,33 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [editingGuest, setEditingGuest] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<Partial<Guest>>({})
-  const [newParty, setNewParty] = useState({ party_name: '', code: '', max_guests: '2' })
+  const [newParty, setNewParty] = useState({
+    party_name: '',
+    code: '',
+    max_guests: '1',
+    guest_names: [''],
+  })
   const [addError, setAddError] = useState('')
   const [addSuccess, setAddSuccess] = useState('')
   const [adding, setAdding] = useState(false)
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
+  useEffect(() => { checkAuth() }, [])
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      router.push('/admin/login')
-      return
-    }
+    if (!session) { router.push('/admin/login'); return }
     fetchData()
   }
 
   const fetchData = async () => {
     const { data: partiesData } = await supabase
-      .from('guest_parties')
-      .select('*')
-      .order('party_name')
-
-    const { data: guestsData } = await supabase
-      .from('guests')
-      .select('*')
-
+      .from('guest_parties').select('*').order('party_name')
+    const { data: guestsData } = await supabase.from('guests').select('*')
     if (partiesData) {
-      const combined = partiesData.map(party => ({
+      setParties(partiesData.map(party => ({
         ...party,
         guests: guestsData?.filter(g => g.party_id === party.id) || []
-      }))
-      setParties(combined)
+      })))
     }
     setLoading(false)
   }
@@ -72,62 +65,72 @@ export default function AdminDashboard() {
     router.push('/admin/login')
   }
 
+  const updateSeats = (seats: string) => {
+    const n = parseInt(seats)
+    const names = [...newParty.guest_names]
+    while (names.length < n) names.push('')
+    setNewParty(p => ({ ...p, max_guests: seats, guest_names: names.slice(0, n) }))
+  }
+
   const handleAddParty = async () => {
     setAddError('')
     setAddSuccess('')
     setAdding(true)
 
-    if (!newParty.party_name.trim()) {
-      setAddError('Please enter a party name.')
-      setAdding(false)
-      return
-    }
-    if (!newParty.code.trim()) {
-      setAddError('Please enter a code.')
+    if (!newParty.party_name.trim()) { setAddError('Please enter a party name.'); setAdding(false); return }
+    if (!newParty.code.trim()) { setAddError('Please enter a code.'); setAdding(false); return }
+    if (!newParty.guest_names[0].trim()) { setAddError('Please enter the primary guest name.'); setAdding(false); return }
+
+    const { data: partyData, error: partyError } = await supabase
+      .from('guest_parties')
+      .insert({
+        party_name: newParty.party_name.trim(),
+        code: newParty.code.toUpperCase().trim(),
+        max_guests: parseInt(newParty.max_guests),
+      })
+      .select()
+      .single()
+
+    if (partyError) {
+      setAddError(partyError.message.includes('unique') ? 'That code is already in use.' : 'Something went wrong.')
       setAdding(false)
       return
     }
 
-    const { error } = await supabase.from('guest_parties').insert({
-      party_name: newParty.party_name.trim(),
-      code: newParty.code.toUpperCase().trim(),
-      max_guests: parseInt(newParty.max_guests),
-    })
+    const guestsToInsert = newParty.guest_names.map((name, i) => ({
+      party_id: partyData.id,
+      name: name.trim() || null,
+      is_primary: i === 0,
+      attending: null,
+      meal_choice: null,
+      dietary_restrictions: null,
+    }))
 
-    if (error) {
-      if (error.message.includes('unique')) {
-        setAddError('That code is already in use. Please choose a different one.')
-      } else {
-        setAddError('Something went wrong. Please try again.')
-      }
-      setAdding(false)
-      return
-    }
+    await supabase.from('guests').insert(guestsToInsert)
 
     setAddSuccess(`${newParty.party_name} added successfully.`)
-    setNewParty({ party_name: '', code: '', max_guests: '2' })
+    setNewParty({ party_name: '', code: '', max_guests: '1', guest_names: [''] })
     setAdding(false)
     fetchData()
   }
 
   const handleDeletePartyRsvp = async (partyId: string) => {
-    if (!confirm('Reset this RSVP? This will delete all guest responses for this party.')) return
-    await supabase.from('guests').delete().eq('party_id', partyId)
+    if (!confirm('Reset this RSVP? This will clear all responses but keep the guest names.')) return
+    await supabase.from('guests').update({
+      attending: null, meal_choice: null, dietary_restrictions: null
+    }).eq('party_id', partyId)
     await supabase.from('guest_parties').update({ rsvp_submitted_at: null }).eq('id', partyId)
     fetchData()
   }
 
   const handleDeleteParty = async (partyId: string, partyName: string) => {
-    if (!confirm(`Completely remove ${partyName} from the guest list? This cannot be undone.`)) return
+    if (!confirm(`Completely remove ${partyName}? This cannot be undone.`)) return
     await supabase.from('guests').delete().eq('party_id', partyId)
     await supabase.from('guest_parties').delete().eq('id', partyId)
     fetchData()
   }
 
-  const startEdit = (guest: Guest) => {
-    setEditingGuest(guest.id)
-    setEditForm({ ...guest })
-  }
+  const startEdit = (guest: Guest) => { setEditingGuest(guest.id); setEditForm({ ...guest }) }
 
   const saveEdit = async () => {
     if (!editingGuest) return
@@ -165,95 +168,66 @@ export default function AdminDashboard() {
       </div>
 
       <div className="admin-stats">
-        <div className="stat-card">
-          <p className="stat-label">Total Invited</p>
-          <p className="stat-value">{totalInvited}</p>
-        </div>
-        <div className="stat-card">
-          <p className="stat-label">Parties Responded</p>
-          <p className="stat-value">{totalResponded} / {parties.length}</p>
-        </div>
-        <div className="stat-card">
-          <p className="stat-label">Attending</p>
-          <p className="stat-value">{totalAttending}</p>
-        </div>
-        <div className="stat-card">
-          <p className="stat-label">Declined</p>
-          <p className="stat-value">{totalDeclined}</p>
-        </div>
+        <div className="stat-card"><p className="stat-label">Total Invited</p><p className="stat-value">{totalInvited}</p></div>
+        <div className="stat-card"><p className="stat-label">Parties Responded</p><p className="stat-value">{totalResponded} / {parties.length}</p></div>
+        <div className="stat-card"><p className="stat-label">Attending</p><p className="stat-value">{totalAttending}</p></div>
+        <div className="stat-card"><p className="stat-label">Declined</p><p className="stat-value">{totalDeclined}</p></div>
       </div>
 
       <div className="meal-tally">
         <p className="meal-tally-title">Meal Selections</p>
-        <div className="meal-tally-row">
-          <span>Beef</span>
-          <span className="meal-tally-count">{mealCounts.beef}</span>
-        </div>
-        <div className="meal-tally-row">
-          <span>Chicken</span>
-          <span className="meal-tally-count">{mealCounts.chicken}</span>
-        </div>
-        <div className="meal-tally-row">
-          <span>Vegetarian</span>
-          <span className="meal-tally-count">{mealCounts.vegetarian}</span>
-        </div>
+        <div className="meal-tally-row"><span>Beef</span><span className="meal-tally-count">{mealCounts.beef}</span></div>
+        <div className="meal-tally-row"><span>Chicken</span><span className="meal-tally-count">{mealCounts.chicken}</span></div>
+        <div className="meal-tally-row"><span>Vegetarian</span><span className="meal-tally-count">{mealCounts.vegetarian}</span></div>
       </div>
 
       <div className="meal-tally" style={{ marginBottom: '2.5rem' }}>
         <p className="meal-tally-title">Add Guest Party</p>
         {addError && <p className="rsvp-error">{addError}</p>}
         {addSuccess && <p style={{ fontSize: '13px', color: 'var(--sage)', marginBottom: '1rem' }}>{addSuccess}</p>}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: '0.75rem', alignItems: 'end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.75rem', marginBottom: '0.75rem' }}>
           <div>
             <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Party Name</label>
-            <input
-              className="edit-input"
-              placeholder="Enter party name here"
-              value={newParty.party_name}
-              onChange={e => setNewParty(p => ({ ...p, party_name: e.target.value }))}
-            />
+            <input className="edit-input" placeholder="Enter party name" value={newParty.party_name}
+              onChange={e => setNewParty(p => ({ ...p, party_name: e.target.value }))} />
           </div>
           <div>
             <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Code</label>
-            <input
-              className="edit-input"
-              placeholder="Enter code here"
-              value={newParty.code}
-              onChange={e => setNewParty(p => ({ ...p, code: e.target.value.toUpperCase() }))}
-            />
+            <input className="edit-input" placeholder="SMITH01" value={newParty.code}
+              onChange={e => setNewParty(p => ({ ...p, code: e.target.value.toUpperCase() }))} />
           </div>
           <div>
             <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>Seats</label>
-            <select
-              className="edit-select"
-              value={newParty.max_guests}
-              onChange={e => setNewParty(p => ({ ...p, max_guests: e.target.value }))}
-              style={{ width: '80px' }}
-            >
-              {[1,2,3,4,5,6,7,8].map(n => (
-                <option key={n} value={n}>{n}</option>
-              ))}
+            <select className="edit-select" value={newParty.max_guests} onChange={e => updateSeats(e.target.value)} style={{ width: '80px' }}>
+              {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
-          <button
-            className="btn-primary"
-            onClick={handleAddParty}
-            disabled={adding}
-            style={{ whiteSpace: 'nowrap', height: '36px' }}
-          >
-            {adding ? 'Adding...' : 'Add Party'}
-          </button>
         </div>
+        {newParty.guest_names.map((name, i) => (
+          <div key={i} style={{ marginBottom: '0.5rem' }}>
+            <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>
+              {i === 0 ? 'Primary Guest Name' : `Guest ${i + 1} Name (optional)`}
+            </label>
+            <input
+              className="edit-input"
+              placeholder={i === 0 ? 'Full name' : 'Leave blank if unknown'}
+              value={name}
+              onChange={e => {
+                const names = [...newParty.guest_names]
+                names[i] = e.target.value
+                setNewParty(p => ({ ...p, guest_names: names }))
+              }}
+            />
+          </div>
+        ))}
+        <button className="btn-primary" onClick={handleAddParty} disabled={adding} style={{ marginTop: '0.5rem' }}>
+          {adding ? 'Adding...' : 'Add Party'}
+        </button>
       </div>
 
       <table className="party-table">
         <thead>
-          <tr>
-            <th>Party</th>
-            <th>Status</th>
-            <th>Guests</th>
-            <th>Actions</th>
-          </tr>
+          <tr><th>Party</th><th>Status</th><th>Guests</th><th>Actions</th></tr>
         </thead>
         <tbody>
           {parties.map(party => (
@@ -265,51 +239,35 @@ export default function AdminDashboard() {
                 </div>
               </td>
               <td>
-                {party.rsvp_submitted_at ? (
-                  <span className="badge badge-yes">Responded</span>
-                ) : (
-                  <span className="badge badge-pending">Pending</span>
-                )}
+                {party.rsvp_submitted_at
+                  ? <span className="badge badge-yes">Responded</span>
+                  : <span className="badge badge-pending">Pending</span>}
               </td>
               <td>
-                {party.guests.length === 0 ? (
-                  <span style={{ color: 'var(--muted)', fontSize: '12px' }}>No response yet</span>
-                ) : (
-                  party.guests.map(guest => (
+                {party.guests.length === 0
+                  ? <span style={{ color: 'var(--muted)', fontSize: '12px' }}>No guests yet</span>
+                  : party.guests.map(guest => (
                     <div key={guest.id} className="guest-row">
                       {editingGuest === guest.id ? (
                         <>
-                          <input
-                            className="edit-input"
-                            value={editForm.name || ''}
-                            onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                            placeholder="Name"
-                          />
-                          <select
-                            className="edit-select"
+                          <input className="edit-input" value={editForm.name || ''} placeholder="Name"
+                            onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+                          <select className="edit-select"
                             value={editForm.attending === null ? '' : String(editForm.attending)}
-                            onChange={e => setEditForm(f => ({ ...f, attending: e.target.value === '' ? null : e.target.value === 'true' }))}
-                          >
+                            onChange={e => setEditForm(f => ({ ...f, attending: e.target.value === '' ? null : e.target.value === 'true' }))}>
                             <option value="">Unknown</option>
                             <option value="true">Attending</option>
                             <option value="false">Declined</option>
                           </select>
-                          <select
-                            className="edit-select"
-                            value={editForm.meal_choice || ''}
-                            onChange={e => setEditForm(f => ({ ...f, meal_choice: e.target.value || null }))}
-                          >
+                          <select className="edit-select" value={editForm.meal_choice || ''}
+                            onChange={e => setEditForm(f => ({ ...f, meal_choice: e.target.value || null }))}>
                             <option value="">No meal selected</option>
                             <option value="beef">Beef</option>
                             <option value="chicken">Chicken</option>
                             <option value="vegetarian">Vegetarian</option>
                           </select>
-                          <input
-                            className="edit-input"
-                            value={editForm.dietary_restrictions || ''}
-                            onChange={e => setEditForm(f => ({ ...f, dietary_restrictions: e.target.value || null }))}
-                            placeholder="Dietary restrictions"
-                          />
+                          <input className="edit-input" value={editForm.dietary_restrictions || ''} placeholder="Dietary restrictions"
+                            onChange={e => setEditForm(f => ({ ...f, dietary_restrictions: e.target.value || null }))} />
                           <div style={{ marginTop: '0.5rem' }}>
                             <button className="admin-btn" onClick={saveEdit}>Save</button>
                             <button className="admin-btn" onClick={() => setEditingGuest(null)}>Cancel</button>
@@ -318,10 +276,11 @@ export default function AdminDashboard() {
                       ) : (
                         <>
                           <div className="guest-name">
-                            {guest.name || '—'}
+                            {guest.name || '(unnamed plus one)'}
                             {' '}
                             {guest.attending === true && <span className="badge badge-yes">Attending</span>}
                             {guest.attending === false && <span className="badge badge-no">Declined</span>}
+                            {guest.attending === null && party.rsvp_submitted_at === null && <span className="badge badge-pending">Pending</span>}
                           </div>
                           {guest.meal_choice && (
                             <div className="guest-detail">
@@ -329,33 +288,20 @@ export default function AdminDashboard() {
                               {guest.dietary_restrictions && ` · ${guest.dietary_restrictions}`}
                             </div>
                           )}
-                          <button
-                            className="admin-btn"
-                            style={{ marginTop: '0.4rem' }}
-                            onClick={() => startEdit(guest)}
-                          >
-                            Edit
-                          </button>
+                          <button className="admin-btn" style={{ marginTop: '0.4rem' }} onClick={() => startEdit(guest)}>Edit</button>
                         </>
                       )}
                     </div>
-                  ))
-                )}
+                  ))}
               </td>
               <td>
                 {party.rsvp_submitted_at && (
-                  <button
-                    className="admin-btn admin-btn-danger"
-                    onClick={() => handleDeletePartyRsvp(party.id)}
-                    style={{ display: 'block', marginBottom: '0.5rem' }}
-                  >
+                  <button className="admin-btn admin-btn-danger" onClick={() => handleDeletePartyRsvp(party.id)}
+                    style={{ display: 'block', marginBottom: '0.5rem' }}>
                     Reset RSVP
                   </button>
                 )}
-                <button
-                  className="admin-btn admin-btn-danger"
-                  onClick={() => handleDeleteParty(party.id, party.party_name)}
-                >
+                <button className="admin-btn admin-btn-danger" onClick={() => handleDeleteParty(party.id, party.party_name)}>
                   Remove Party
                 </button>
               </td>

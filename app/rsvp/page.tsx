@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import { useAuth, getCode } from '../lib/useAuth'
+import { getCode } from '../lib/useAuth'
 
 type Party = {
   id: string
@@ -15,14 +15,15 @@ type Party = {
 }
 
 type GuestForm = {
-  name: string
+  id: string
+  name: string | null
+  is_primary: boolean
   attending: boolean | null
   meal_choice: string
   dietary_restrictions: string
 }
 
 export default function RSVPPage() {
-  useAuth()
   const router = useRouter()
   const [step, setStep] = useState<'loading' | 'form' | 'confirmed'>('loading')
   const [error, setError] = useState('')
@@ -30,47 +31,30 @@ export default function RSVPPage() {
   const [party, setParty] = useState<Party | null>(null)
   const [guests, setGuests] = useState<GuestForm[]>([])
 
-  useEffect(() => {
-    loadParty()
-  }, [])
+  useEffect(() => { loadParty() }, [])
 
   const loadParty = async () => {
     const code = getCode()
-    if (!code) {
-      router.push('/')
-      return
-    }
+    if (!code) { router.push('/'); return }
 
     const { data: partyData, error: partyError } = await supabase
-      .from('guest_parties')
-      .select('*')
-      .eq('code', code)
-      .single()
+      .from('guest_parties').select('*').eq('code', code).single()
 
-    if (partyError || !partyData) {
-      router.push('/')
-      return
-    }
+    if (partyError || !partyData) { router.push('/'); return }
 
     const { data: existingGuests } = await supabase
-      .from('guests')
-      .select('*')
-      .eq('party_id', partyData.id)
+      .from('guests').select('*').eq('party_id', partyData.id)
       .order('is_primary', { ascending: false })
 
-    const slots: GuestForm[] = []
-    for (let i = 0; i < partyData.max_guests; i++) {
-      const existing = existingGuests?.[i]
-      slots.push({
-        name: existing?.name || '',
-        attending: existing?.attending ?? null,
-        meal_choice: existing?.meal_choice || '',
-        dietary_restrictions: existing?.dietary_restrictions || '',
-      })
-    }
-
     setParty(partyData)
-    setGuests(slots)
+    setGuests((existingGuests || []).map(g => ({
+      id: g.id,
+      name: g.name,
+      is_primary: g.is_primary,
+      attending: g.attending,
+      meal_choice: g.meal_choice || '',
+      dietary_restrictions: g.dietary_restrictions || '',
+    })))
     setStep('form')
   }
 
@@ -83,48 +67,31 @@ export default function RSVPPage() {
     setLoading(true)
     setError('')
 
-    if (!guests[0].name.trim()) {
-      setError('Please enter your name.')
-      setLoading(false)
-      return
-    }
     if (guests[0].attending === null) {
       setError('Please let us know if you can attend.')
       setLoading(false)
       return
     }
+
     for (let i = 0; i < guests.length; i++) {
       const g = guests[i]
-      if (g.name.trim() && g.attending && !g.meal_choice) {
+      if (g.attending && !g.meal_choice) {
         setError(`Please select a meal for ${g.name || `guest ${i + 1}`}.`)
         setLoading(false)
         return
       }
     }
 
-    await supabase.from('guests').delete().eq('party_id', party.id)
-
-    const guestsToInsert = guests
-      .filter((g, i) => i === 0 || g.name.trim())
-      .map((g, i) => ({
-        party_id: party.id,
-        name: g.name.trim() || null,
-        is_primary: i === 0,
-        attending: g.attending,
-        meal_choice: g.meal_choice || null,
-        dietary_restrictions: g.dietary_restrictions || null,
-      }))
-
-    const { error: insertError } = await supabase.from('guests').insert(guestsToInsert)
-
-    if (insertError) {
-      setError('Something went wrong. Please try again.')
-      setLoading(false)
-      return
+    for (const guest of guests) {
+      await supabase.from('guests').update({
+        name: guest.name,
+        attending: guest.attending,
+        meal_choice: guest.meal_choice || null,
+        dietary_restrictions: guest.dietary_restrictions || null,
+      }).eq('id', guest.id)
     }
 
-    await supabase
-      .from('guest_parties')
+    await supabase.from('guest_parties')
       .update({ rsvp_submitted_at: new Date().toISOString() })
       .eq('id', party.id)
 
@@ -160,16 +127,28 @@ export default function RSVPPage() {
             </p>
             <div className="rsvp-card">
               {guests.map((guest, i) => (
-                <div key={i} className="guest-slot">
+                <div key={guest.id} className="guest-slot">
                   <p className="guest-slot-label">
-                    {i === 0 ? 'Your details' : `Guest ${i + 1}`}
+                    {i === 0 ? 'Primary Guest' : `Guest ${i + 1}`}
                   </p>
-                  <input
-                    className="rsvp-input"
-                    placeholder={i === 0 ? 'Your name' : 'Guest name (if attending)'}
-                    value={guest.name}
-                    onChange={e => updateGuest(i, 'name', e.target.value)}
-                  />
+                  {guest.name ? (
+                    <p style={{
+                      fontFamily: 'Cormorant Garamond, serif',
+                      fontSize: '20px',
+                      fontWeight: 400,
+                      color: 'var(--bark)',
+                      marginBottom: '1rem'
+                    }}>
+                      {guest.name}
+                    </p>
+                  ) : (
+                    <input
+                      className="rsvp-input"
+                      placeholder="Guest name"
+                      value={guest.name || ''}
+                      onChange={e => updateGuest(i, 'name', e.target.value)}
+                    />
+                  )}
                   <div className="attending-toggle">
                     <button
                       className={`toggle-btn ${guest.attending === true ? 'active-yes' : ''}`}
