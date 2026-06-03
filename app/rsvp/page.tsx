@@ -16,7 +16,7 @@ type Party = {
 
 type GuestForm = {
   id: string
-  name: string | null
+  name: string
   is_primary: boolean
   isPreFilled: boolean
   attending: boolean | null
@@ -48,15 +48,15 @@ export default function RSVPPage() {
       .order('is_primary', { ascending: false })
 
     setParty(partyData)
-setGuests((existingGuests || []).map(g => ({
-  id: g.id,
-  name: g.name,
-  is_primary: g.is_primary,
-  isPreFilled: !!g.name,
-  attending: g.attending,
-  meal_choice: g.meal_choice || '',
-  dietary_restrictions: g.dietary_restrictions || '',
-})))
+    setGuests((existingGuests || []).map(g => ({
+      id: g.id,
+      name: g.name || '',
+      is_primary: g.is_primary,
+      isPreFilled: g.name !== null && g.name !== '',
+      attending: g.attending,
+      meal_choice: g.meal_choice || '',
+      dietary_restrictions: g.dietary_restrictions || '',
+    })))
     setStep('form')
   }
 
@@ -86,7 +86,7 @@ setGuests((existingGuests || []).map(g => ({
 
     for (const guest of guests) {
       await supabase.from('guests').update({
-        name: guest.name,
+        name: guest.name || null,
         attending: guest.attending,
         meal_choice: guest.meal_choice || null,
         dietary_restrictions: guest.dietary_restrictions || null,
@@ -130,24 +130,22 @@ setGuests((existingGuests || []).map(g => ({
             <div className="rsvp-card">
               {guests.map((guest, i) => (
                 <div key={guest.id} className="guest-slot">
-{guest.isPreFilled ? (
-  <p style={{
-    fontFamily: 'Cormorant Garamond, serif',
-    fontSize: '20px',
-    fontWeight: 400,
-    color: 'var(--bark)',
-    marginBottom: '1rem'
-  }}>
-    {guest.name}
-  </p>
-) : (
-  <input
-    className="rsvp-input"
-    placeholder="Your plus one's name"
-    value={guest.name || ''}
-    onChange={e => updateGuest(i, 'name', e.target.value)}
-  />
-)}
+                  {guest.isPreFilled ? (
+                    <p style={{
+                      fontFamily: 'Cormorant Garamond, serif',
+                      fontSize: '20px',
+                      fontWeight: 400,
+                      color: 'var(--bark)',
+                      marginBottom: '1rem'
+                    }}>
+                      {guest.name}
+                    </p>
+                  ) : (
+                    <input
+                      className="rsvp-input"
+                      placeholder="Your plus one's name"
+                      value={guest.name}
+                      onChange={e => updateGuest(i, 'name', e.target.value)}
                     />
                   )}
                   <div className="attending-toggle">
