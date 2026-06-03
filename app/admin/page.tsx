@@ -65,6 +65,49 @@ export default function AdminDashboard() {
     router.push('/admin/login')
   }
 
+  const downloadCSV = () => {
+    const rows = [
+      ['Party Name', 'Code', 'Seats', 'RSVP Submitted', 'Guest Name', 'Attending', 'Meal Choice', 'Dietary Restrictions']
+    ]
+
+    for (const party of parties) {
+      if (party.guests.length === 0) {
+        rows.push([
+          party.party_name,
+          party.code,
+          String(party.max_guests),
+          party.rsvp_submitted_at ? new Date(party.rsvp_submitted_at).toLocaleDateString() : 'No response',
+          '', '', '', ''
+        ])
+      } else {
+        for (const guest of party.guests) {
+          rows.push([
+            party.party_name,
+            party.code,
+            String(party.max_guests),
+            party.rsvp_submitted_at ? new Date(party.rsvp_submitted_at).toLocaleDateString() : 'No response',
+            guest.name || '(unnamed)',
+            guest.attending === true ? 'Attending' : guest.attending === false ? 'Declined' : 'Pending',
+            guest.meal_choice || '—',
+            guest.dietary_restrictions || '—',
+          ])
+        }
+      }
+    }
+
+    const csv = rows.map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `ericandkate-rsvps-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const updateSeats = (seats: string) => {
     const n = parseInt(seats)
     const names = [...newParty.guest_names]
@@ -164,7 +207,10 @@ export default function AdminDashboard() {
     <div className="admin-page">
       <div className="admin-header">
         <h1 className="admin-title">Eric & Kate — Admin</h1>
-        <button className="admin-btn" onClick={handleLogout}>Sign Out</button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button className="download-btn" onClick={downloadCSV}>Download CSV</button>
+          <button className="admin-btn" onClick={handleLogout}>Sign Out</button>
+        </div>
       </div>
 
       <div className="admin-stats">
@@ -206,7 +252,7 @@ export default function AdminDashboard() {
         {newParty.guest_names.map((name, i) => (
           <div key={i} style={{ marginBottom: '0.5rem' }}>
             <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>
-              {i === 0 ? 'Primary Guest Name' : `Guest ${i + 1} Name (optional)`}
+              {i === 0 ? 'Primary Guest Name' : `Guest ${i + 1} Name (optional — leave blank if plus one is unknown)`}
             </label>
             <input
               className="edit-input"
@@ -280,7 +326,7 @@ export default function AdminDashboard() {
                             {' '}
                             {guest.attending === true && <span className="badge badge-yes">Attending</span>}
                             {guest.attending === false && <span className="badge badge-no">Declined</span>}
-                            {guest.attending === null && party.rsvp_submitted_at === null && <span className="badge badge-pending">Pending</span>}
+                            {guest.attending === null && <span className="badge badge-pending">Pending</span>}
                           </div>
                           {guest.meal_choice && (
                             <div className="guest-detail">

@@ -807,3 +807,21 @@ footer {
   display: block;
   margin-bottom: 0.5rem;
 }
+
+.download-btn {
+  font-family: 'Lato', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--sage);
+  background: transparent;
+  border: 0.5px solid var(--sage);
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.download-btn:hover {
+  background: var(--sage);
+  color: white;
+}
