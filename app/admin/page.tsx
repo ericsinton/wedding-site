@@ -69,22 +69,14 @@ export default function AdminDashboard() {
     const rows = [
       ['Party Name', 'Code', 'Seats', 'RSVP Submitted', 'Guest Name', 'Attending', 'Meal Choice', 'Dietary Restrictions']
     ]
-
     for (const party of parties) {
       if (party.guests.length === 0) {
-        rows.push([
-          party.party_name,
-          party.code,
-          String(party.max_guests),
+        rows.push([party.party_name, party.code, String(party.max_guests),
           party.rsvp_submitted_at ? new Date(party.rsvp_submitted_at).toLocaleDateString() : 'No response',
-          '', '', '', ''
-        ])
+          '', '', '', ''])
       } else {
         for (const guest of party.guests) {
-          rows.push([
-            party.party_name,
-            party.code,
-            String(party.max_guests),
+          rows.push([party.party_name, party.code, String(party.max_guests),
             party.rsvp_submitted_at ? new Date(party.rsvp_submitted_at).toLocaleDateString() : 'No response',
             guest.name || '(unnamed)',
             guest.attending === true ? 'Attending' : guest.attending === false ? 'Declined' : 'Pending',
@@ -94,11 +86,9 @@ export default function AdminDashboard() {
         }
       }
     }
-
     const csv = rows.map(row =>
       row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
     ).join('\n')
-
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -157,11 +147,35 @@ export default function AdminDashboard() {
     fetchData()
   }
 
-  const handleDeletePartyRsvp = async (partyId: string) => {
-    if (!confirm('Reset this RSVP? This will clear all responses but keep the guest names.')) return
-    await supabase.from('guests').update({
-      attending: null, meal_choice: null, dietary_restrictions: null
-    }).eq('party_id', partyId)
+  const handleDeletePartyRsvp = async (partyId: string, maxGuests: number) => {
+    if (!confirm('Reset this RSVP? This will clear all responses but keep guest names.')) return
+
+    // Fetch all guest rows for this party ordered by creation
+    const { data: allGuests } = await supabase
+      .from('guests')
+      .select('id')
+      .eq('party_id', partyId)
+      .order('created_at', { ascending: true })
+
+    if (allGuests) {
+      const toKeep = allGuests.slice(0, maxGuests).map(g => g.id)
+      const toDelete = allGuests.slice(maxGuests).map(g => g.id)
+
+      // Delete any extra rows beyond max_guests
+      if (toDelete.length > 0) {
+        await supabase.from('guests').delete().in('id', toDelete)
+      }
+
+      // Reset the correct rows
+      if (toKeep.length > 0) {
+        await supabase.from('guests').update({
+          attending: null,
+          meal_choice: null,
+          dietary_restrictions: null,
+        }).in('id', toKeep)
+      }
+    }
+
     await supabase.from('guest_parties').update({ rsvp_submitted_at: null }).eq('id', partyId)
     fetchData()
   }
@@ -342,12 +356,14 @@ export default function AdminDashboard() {
               </td>
               <td>
                 {party.rsvp_submitted_at && (
-                  <button className="admin-btn admin-btn-danger" onClick={() => handleDeletePartyRsvp(party.id)}
+                  <button className="admin-btn admin-btn-danger"
+                    onClick={() => handleDeletePartyRsvp(party.id, party.max_guests)}
                     style={{ display: 'block', marginBottom: '0.5rem' }}>
                     Reset RSVP
                   </button>
                 )}
-                <button className="admin-btn admin-btn-danger" onClick={() => handleDeleteParty(party.id, party.party_name)}>
+                <button className="admin-btn admin-btn-danger"
+                  onClick={() => handleDeleteParty(party.id, party.party_name)}>
                   Remove Party
                 </button>
               </td>
