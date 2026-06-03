@@ -128,9 +128,6 @@ export default function RSVPPage() {
             <div className="rsvp-card">
               {guests.map((guest, i) => (
                 <div key={guest.id} className="guest-slot">
-                  <p className="guest-slot-label">
-                    {i === 0 ? 'Primary Guest' : `Guest ${i + 1}`}
-                  </p>
                   {guest.name ? (
                     <p style={{
                       fontFamily: 'Cormorant Garamond, serif',
@@ -194,6 +191,16 @@ export default function RSVPPage() {
               >
                 {loading ? 'Submitting...' : 'Submit RSVP'}
               </button>
+              <p style={{
+                fontSize: '12px',
+                color: 'var(--muted)',
+                textAlign: 'center',
+                marginTop: '1rem',
+                fontStyle: 'italic',
+                fontFamily: 'Cormorant Garamond, serif',
+              }}>
+                You can always resubmit before the RSVP deadline.
+              </p>
             </div>
           </>
         )}
