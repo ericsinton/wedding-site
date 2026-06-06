@@ -201,6 +201,12 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const handleDeleteGuest = async (guestId: string, guestName: string | null) => {
+  if (!confirm(`Remove ${guestName || 'this guest'}? This cannot be undone.`)) return
+  await supabase.from('guests').delete().eq('id', guestId)
+  fetchData()
+}
+
   const totalInvited = parties.reduce((sum, p) => sum + p.max_guests, 0)
   const totalResponded = parties.filter(p => p.rsvp_submitted_at).length
   const totalAttending = parties.flatMap(p => p.guests).filter(g => g.attending).length
@@ -349,6 +355,7 @@ export default function AdminDashboard() {
                             </div>
                           )}
                           <button className="admin-btn" style={{ marginTop: '0.4rem' }} onClick={() => startEdit(guest)}>Edit</button>
+<button className="admin-btn admin-btn-danger" style={{ marginTop: '0.4rem' }} onClick={() => handleDeleteGuest(guest.id, guest.name)}>Remove</button>
                         </>
                       )}
                     </div>
