@@ -15,6 +15,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       </head>
       <body>{children}</body>
     </html>
