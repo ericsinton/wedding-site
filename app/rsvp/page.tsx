@@ -69,11 +69,14 @@ export default function RSVPPage() {
     setLoading(true)
     setError('')
 
-    if (guests[0].attending === null) {
-      setError('Please let us know if you can attend.')
-      setLoading(false)
-      return
-    }
+for (let i = 0; i < guests.length; i++) {
+  const g = guests[i]
+  if (g.attending === null) {
+    setError(`Please select attending or unable to attend for ${g.name || `guest ${i + 1}`}.`)
+    setLoading(false)
+    return
+  }
+}
 
     for (let i = 0; i < guests.length; i++) {
       const g = guests[i]
