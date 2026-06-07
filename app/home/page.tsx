@@ -25,7 +25,7 @@ export default function Home() {
       <nav>
         <Link href="/our-story">Our Story</Link>
         <Link href="/travel">Travel</Link>
-        <span className="nav-monogram">E & K</span>
+        <Link href="/home" className="nav-monogram">E & K</Link>
         <Link href="/registry">Registry</Link>
         <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
       </nav>
