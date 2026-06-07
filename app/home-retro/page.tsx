@@ -476,7 +476,7 @@ export default function HomeRetro() {
       </div>
 
       <div className="win98-taskbar">
-        <button className="win98-start-btn">[>>] Start</button>
+        <button className="win98-start-btn">[&gt;&gt;] Start</button>
         <div className="win98-taskbar-window">[ie] Wedding Website</div>
         <div className="win98-taskbar-window">[~] Guestbook</div>
         <div className="win98-clock">{time}</div>
