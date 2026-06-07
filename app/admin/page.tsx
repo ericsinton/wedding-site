@@ -43,6 +43,9 @@ export default function AdminDashboard() {
   const [addError, setAddError] = useState('')
   const [addSuccess, setAddSuccess] = useState('')
   const [adding, setAdding] = useState(false)
+  const [deadline, setDeadline] = useState<string>('')
+  const [deadlineSaving, setDeadlineSaving] = useState(false)
+  const [deadlineSaved, setDeadlineSaved] = useState(false)
 
   useEffect(() => { checkAuth() }, [])
 
@@ -62,6 +65,9 @@ export default function AdminDashboard() {
         guests: guestsData?.filter(g => g.party_id === party.id) || []
       })))
     }
+    const { data: settingData } = await supabase
+      .from('site_settings').select('value').eq('key', 'rsvp_deadline').single()
+    setDeadline(settingData?.value || '')
     setLoading(false)
   }
 
@@ -172,6 +178,23 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const saveDeadline = async () => {
+    setDeadlineSaving(true)
+    await supabase.from('site_settings').upsert({ key: 'rsvp_deadline', value: deadline || null })
+    setDeadlineSaving(false)
+    setDeadlineSaved(true)
+    setTimeout(() => setDeadlineSaved(false), 2000)
+  }
+
+  const clearDeadline = async () => {
+    setDeadline('')
+    setDeadlineSaving(true)
+    await supabase.from('site_settings').upsert({ key: 'rsvp_deadline', value: null })
+    setDeadlineSaving(false)
+    setDeadlineSaved(true)
+    setTimeout(() => setDeadlineSaved(false), 2000)
+  }
+
   const handleDeletePartyRsvp = async (partyId: string, maxGuests: number) => {
     if (!confirm('Reset this RSVP? This will clear all responses but keep guest names.')) return
     const { data: allGuests } = await supabase
@@ -263,6 +286,30 @@ export default function AdminDashboard() {
         <div className="meal-tally-row"><span>Beef</span><span className="meal-tally-count">{mealCounts.beef}</span></div>
         <div className="meal-tally-row"><span>Chicken</span><span className="meal-tally-count">{mealCounts.chicken}</span></div>
         <div className="meal-tally-row"><span>Vegetarian</span><span className="meal-tally-count">{mealCounts.vegetarian}</span></div>
+      </div>
+
+      <div className="meal-tally" style={{ marginBottom: '2.5rem' }}>
+        <p className="meal-tally-title">RSVP Deadline</p>
+        <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '1rem', fontWeight: 300 }}>
+          After this date, guests can view but not edit their responses. Leave blank for no deadline.
+        </p>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <input
+            type="date"
+            className="edit-input"
+            style={{ maxWidth: '200px', marginBottom: 0 }}
+            value={deadline}
+            onChange={e => setDeadline(e.target.value)}
+          />
+          <button className="btn-primary" onClick={saveDeadline} disabled={deadlineSaving}>
+            {deadlineSaving ? 'Saving...' : deadlineSaved ? 'Saved!' : 'Save'}
+          </button>
+          {deadline && (
+            <button className="admin-btn" onClick={clearDeadline} disabled={deadlineSaving}>
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="meal-tally" style={{ marginBottom: '2.5rem' }}>
