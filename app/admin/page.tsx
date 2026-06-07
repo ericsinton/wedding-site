@@ -22,6 +22,7 @@ type Party = {
   code: string
   max_guests: number
   invited_friday: boolean
+  is_retro: boolean
   rsvp_submitted_at: string | null
   guests: Guest[]
 }
@@ -166,6 +167,11 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const toggleRetro = async (partyId: string, current: boolean) => {
+  await supabase.from('guest_parties').update({ is_retro: !current }).eq('id', partyId)
+  fetchData()
+}
+
   const handleDeletePartyRsvp = async (partyId: string, maxGuests: number) => {
     if (!confirm('Reset this RSVP? This will clear all responses but keep guest names.')) return
     const { data: allGuests } = await supabase
@@ -281,17 +287,22 @@ export default function AdminDashboard() {
             </select>
           </div>
         </div>
-        <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <input
-            type="checkbox"
-            id="invited_friday"
-            checked={newParty.invited_friday}
-            onChange={e => setNewParty(p => ({ ...p, invited_friday: e.target.checked }))}
-          />
-          <label htmlFor="invited_friday" className="stat-label" style={{ margin: 0, cursor: 'pointer' }}>
-            Invite to Friday dinner (April 2)
-          </label>
-        </div>
+        <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+  <input
+    type="checkbox"
+    checked={party.invited_friday}
+    onChange={() => toggleFridayInvite(party.id, party.invited_friday)}
+  />
+  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Friday dinner invite</span>
+</div>
+<div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+  <input
+    type="checkbox"
+    checked={party.is_retro}
+    onChange={() => toggleRetro(party.id, party.is_retro)}
+  />
+  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>🪟 Retro mode</span>
+</div>
         {newParty.guest_names.map((name, i) => (
           <div key={i} style={{ marginBottom: '0.5rem' }}>
             <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>
