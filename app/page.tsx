@@ -15,7 +15,8 @@ export default function Gate() {
   useEffect(() => {
     const existing = getCode()
     if (existing) {
-      router.push('/home')
+      const theme = sessionStorage.getItem('weddingTheme')
+      router.push(theme === 'retro' ? '/home-retro' : '/home')
     } else {
       setChecking(false)
     }
@@ -27,7 +28,7 @@ export default function Gate() {
 
     const { data, error: dbError } = await supabase
       .from('guest_parties')
-      .select('id')
+      .select('id, is_retro')
       .eq('code', code.toUpperCase().trim())
       .single()
 
@@ -37,8 +38,8 @@ export default function Gate() {
       return
     }
 
-    saveCode(code.toUpperCase().trim())
-    router.push('/home')
+    saveCode(code.toUpperCase().trim(), data.is_retro)
+    router.push(data.is_retro ? '/home-retro' : '/home')
   }
 
   if (checking) return null

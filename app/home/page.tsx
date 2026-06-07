@@ -23,13 +23,13 @@ export default function Home() {
   return (
     <>
       <nav>
-  <Link href="/our-story">Our Story</Link>
-  <Link href="/travel">Travel</Link>
-  <Link href="/home" className="nav-monogram">E & K</Link>
-  <Link href="/registry">Registry</Link>
-  <Link href="/faq">FAQ</Link>
-  <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
-</nav>
+        <Link href="/our-story">Our Story</Link>
+        <Link href="/travel">Travel</Link>
+        <Link href="/home" className="nav-monogram">E & K</Link>
+        <Link href="/registry">Registry</Link>
+        <Link href="/faq">FAQ</Link>
+        <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
+      </nav>
 
       <section className="hero">
         <div className="hero-texture" />
