@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import { getCode } from '../lib/useAuth'
+import { getCode, getTheme } from '../lib/useAuth'
 
 type Party = {
   id: string
@@ -301,7 +301,7 @@ export default function RSVPPage() {
               Your RSVP has been received. We can&apos;t wait to celebrate with you
               at The Lakehouse on April 3rd, 2027.
             </p>
-            <Link href="/home" className="btn-primary">Back to home</Link>
+            <Link href={getTheme() === 'retro' ? '/home-retro' : '/home'} className="btn-primary">Back to home</Link>
           </div>
         )}
       </div>

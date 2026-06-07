@@ -1,16 +1,35 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { getCode } from '../lib/useAuth'
 
 export default function OurStory() {
+  const router = useRouter()
+  const [authed, setAuthed] = useState(false)
+
+  useEffect(() => {
+    const code = getCode()
+    if (!code) {
+      router.push('/')
+    } else {
+      setAuthed(true)
+    }
+  }, [router])
+
+  if (!authed) return null
+
   return (
     <>
-<nav>
-  <Link href="/our-story">Our Story</Link>
-  <Link href="/travel">Travel</Link>
-  <Link href="/home" className="nav-monogram">E & K</Link>
-  <Link href="/registry">Registry</Link>
-  <Link href="/faq">FAQ</Link>
-  <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
-</nav>
+      <nav>
+        <Link href="/our-story">Our Story</Link>
+        <Link href="/travel">Travel</Link>
+        <Link href="/home" className="nav-monogram">E & K</Link>
+        <Link href="/registry">Registry</Link>
+        <Link href="/faq">FAQ</Link>
+        <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
+      </nav>
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">Our Story</p>
         <h1 className="rsvp-heading">Coming Soon</h1>

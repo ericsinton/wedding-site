@@ -1,17 +1,3 @@
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-
-export function useAuth() {
-  const router = useRouter()
-
-  useEffect(() => {
-    const code = sessionStorage.getItem('weddingCode')
-    if (!code) {
-      router.push('/')
-    }
-  }, [router])
-}
-
 export function saveCode(code: string, isRetro: boolean = false) {
   sessionStorage.setItem('weddingCode', code)
   sessionStorage.setItem('weddingTheme', isRetro ? 'retro' : 'normal')

@@ -431,8 +431,7 @@ export default function HomeRetro() {
               <p style={{ fontSize: '12px', margin: 0, lineHeight: '1.6' }}>
                 We are SO excited to celebrate our special day with you!! <span className="emo-bounce" style={{ fontSize: '11px' }}>:-D</span>
                 Please use this website to RSVP and find all the info you need.
-                Don&apos;t forget to sign our guestbook!! 
-                at 800x600 resolution. <span className="emo" style={{ color: '#008000' }}>^_^</span>
+                Don&apos;t forget to sign our guestbook!! <span className="emo" style={{ color: '#008000' }}>^_^</span>
               </p>
             </div>
 
