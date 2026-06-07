@@ -366,10 +366,8 @@ export default function HomeRetro() {
           </div>
           <div className="win98-content">
 
-            <div style={{ textAlign: 'center', fontSize: '28px', marginBottom: '4px', letterSpacing: '8px' }}>
-              <span className="emo-bounce">:-)</span>
-              <span className="emo-wave" style={{ marginLeft: '8px' }}>&lt;3</span>
-              <span className="emo-bounce" style={{ marginLeft: '8px', animationDelay: '0.3s' }}>:-)</span>
+            <div style={{ textAlign: 'center', fontFamily: 'monospace', fontSize: '13px', color: '#000080', marginBottom: '8px', letterSpacing: '2px' }}>
+              *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*
             </div>
 
             <div className="win98-heading">
