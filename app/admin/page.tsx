@@ -10,6 +10,8 @@ type Guest = {
   name: string | null
   is_primary: boolean
   attending: boolean | null
+  attending_friday: boolean | null
+  attending_sunday: boolean | null
   meal_choice: string | null
   dietary_restrictions: string | null
 }
@@ -19,6 +21,7 @@ type Party = {
   party_name: string
   code: string
   max_guests: number
+  invited_friday: boolean
   rsvp_submitted_at: string | null
   guests: Guest[]
 }
@@ -34,6 +37,7 @@ export default function AdminDashboard() {
     code: '',
     max_guests: '1',
     guest_names: [''],
+    invited_friday: false,
   })
   const [addError, setAddError] = useState('')
   const [addSuccess, setAddSuccess] = useState('')
@@ -67,19 +71,26 @@ export default function AdminDashboard() {
 
   const downloadCSV = () => {
     const rows = [
-      ['Party Name', 'Code', 'Seats', 'RSVP Submitted', 'Guest Name', 'Attending', 'Meal Choice', 'Dietary Restrictions']
+      ['Party Name', 'Code', 'Seats', 'Friday Invite', 'RSVP Submitted',
+       'Guest Name', 'Attending Friday', 'Attending Saturday', 'Attending Sunday',
+       'Meal Choice', 'Dietary Restrictions']
     ]
     for (const party of parties) {
       if (party.guests.length === 0) {
         rows.push([party.party_name, party.code, String(party.max_guests),
+          party.invited_friday ? 'Yes' : 'No',
           party.rsvp_submitted_at ? new Date(party.rsvp_submitted_at).toLocaleDateString() : 'No response',
-          '', '', '', ''])
+          '', '', '', '', '', ''])
       } else {
         for (const guest of party.guests) {
-          rows.push([party.party_name, party.code, String(party.max_guests),
+          rows.push([
+            party.party_name, party.code, String(party.max_guests),
+            party.invited_friday ? 'Yes' : 'No',
             party.rsvp_submitted_at ? new Date(party.rsvp_submitted_at).toLocaleDateString() : 'No response',
             guest.name || '(unnamed)',
+            party.invited_friday ? (guest.attending_friday === true ? 'Attending' : guest.attending_friday === false ? 'Declined' : 'Pending') : 'N/A',
             guest.attending === true ? 'Attending' : guest.attending === false ? 'Declined' : 'Pending',
+            guest.attending_sunday === true ? 'Attending' : guest.attending_sunday === false ? 'Declined' : 'Pending',
             guest.meal_choice || '—',
             guest.dietary_restrictions || '—',
           ])
@@ -120,6 +131,7 @@ export default function AdminDashboard() {
         party_name: newParty.party_name.trim(),
         code: newParty.code.toUpperCase().trim(),
         max_guests: parseInt(newParty.max_guests),
+        invited_friday: newParty.invited_friday,
       })
       .select()
       .single()
@@ -135,6 +147,8 @@ export default function AdminDashboard() {
       name: name.trim() || null,
       is_primary: i === 0,
       attending: null,
+      attending_friday: null,
+      attending_sunday: null,
       meal_choice: null,
       dietary_restrictions: null,
     }))
@@ -142,40 +156,32 @@ export default function AdminDashboard() {
     await supabase.from('guests').insert(guestsToInsert)
 
     setAddSuccess(`${newParty.party_name} added successfully.`)
-    setNewParty({ party_name: '', code: '', max_guests: '1', guest_names: [''] })
+    setNewParty({ party_name: '', code: '', max_guests: '1', guest_names: [''], invited_friday: false })
     setAdding(false)
+    fetchData()
+  }
+
+  const toggleFridayInvite = async (partyId: string, current: boolean) => {
+    await supabase.from('guest_parties').update({ invited_friday: !current }).eq('id', partyId)
     fetchData()
   }
 
   const handleDeletePartyRsvp = async (partyId: string, maxGuests: number) => {
     if (!confirm('Reset this RSVP? This will clear all responses but keep guest names.')) return
-
-    // Fetch all guest rows for this party ordered by creation
     const { data: allGuests } = await supabase
-      .from('guests')
-      .select('id')
-      .eq('party_id', partyId)
+      .from('guests').select('id').eq('party_id', partyId)
       .order('created_at', { ascending: true })
-
     if (allGuests) {
       const toKeep = allGuests.slice(0, maxGuests).map(g => g.id)
       const toDelete = allGuests.slice(maxGuests).map(g => g.id)
-
-      // Delete any extra rows beyond max_guests
-      if (toDelete.length > 0) {
-        await supabase.from('guests').delete().in('id', toDelete)
-      }
-
-      // Reset the correct rows
+      if (toDelete.length > 0) await supabase.from('guests').delete().in('id', toDelete)
       if (toKeep.length > 0) {
         await supabase.from('guests').update({
-          attending: null,
-          meal_choice: null,
-          dietary_restrictions: null,
+          attending: null, attending_friday: null, attending_sunday: null,
+          meal_choice: null, dietary_restrictions: null,
         }).in('id', toKeep)
       }
     }
-
     await supabase.from('guest_parties').update({ rsvp_submitted_at: null }).eq('id', partyId)
     fetchData()
   }
@@ -187,6 +193,12 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const handleDeleteGuest = async (guestId: string, guestName: string | null) => {
+    if (!confirm(`Remove ${guestName || 'this guest'}? This cannot be undone.`)) return
+    await supabase.from('guests').delete().eq('id', guestId)
+    fetchData()
+  }
+
   const startEdit = (guest: Guest) => { setEditingGuest(guest.id); setEditForm({ ...guest }) }
 
   const saveEdit = async () => {
@@ -194,6 +206,8 @@ export default function AdminDashboard() {
     await supabase.from('guests').update({
       name: editForm.name,
       attending: editForm.attending,
+      attending_friday: editForm.attending_friday,
+      attending_sunday: editForm.attending_sunday,
       meal_choice: editForm.meal_choice,
       dietary_restrictions: editForm.dietary_restrictions,
     }).eq('id', editingGuest)
@@ -201,16 +215,12 @@ export default function AdminDashboard() {
     fetchData()
   }
 
-  const handleDeleteGuest = async (guestId: string, guestName: string | null) => {
-  if (!confirm(`Remove ${guestName || 'this guest'}? This cannot be undone.`)) return
-  await supabase.from('guests').delete().eq('id', guestId)
-  fetchData()
-}
-
   const totalInvited = parties.reduce((sum, p) => sum + p.max_guests, 0)
   const totalResponded = parties.filter(p => p.rsvp_submitted_at).length
   const totalAttending = parties.flatMap(p => p.guests).filter(g => g.attending).length
   const totalDeclined = parties.flatMap(p => p.guests).filter(g => g.attending === false).length
+  const fridayAttending = parties.filter(p => p.invited_friday).flatMap(p => p.guests).filter(g => g.attending_friday).length
+  const sundayAttending = parties.flatMap(p => p.guests).filter(g => g.attending_sunday).length
   const mealCounts = {
     beef: parties.flatMap(p => p.guests).filter(g => g.meal_choice === 'beef').length,
     chicken: parties.flatMap(p => p.guests).filter(g => g.meal_choice === 'chicken').length,
@@ -236,12 +246,14 @@ export default function AdminDashboard() {
       <div className="admin-stats">
         <div className="stat-card"><p className="stat-label">Total Invited</p><p className="stat-value">{totalInvited}</p></div>
         <div className="stat-card"><p className="stat-label">Parties Responded</p><p className="stat-value">{totalResponded} / {parties.length}</p></div>
-        <div className="stat-card"><p className="stat-label">Attending</p><p className="stat-value">{totalAttending}</p></div>
+        <div className="stat-card"><p className="stat-label">Saturday Attending</p><p className="stat-value">{totalAttending}</p></div>
+        <div className="stat-card"><p className="stat-label">Friday Attending</p><p className="stat-value">{fridayAttending}</p></div>
+        <div className="stat-card"><p className="stat-label">Sunday Attending</p><p className="stat-value">{sundayAttending}</p></div>
         <div className="stat-card"><p className="stat-label">Declined</p><p className="stat-value">{totalDeclined}</p></div>
       </div>
 
       <div className="meal-tally">
-        <p className="meal-tally-title">Meal Selections</p>
+        <p className="meal-tally-title">Saturday Meal Selections</p>
         <div className="meal-tally-row"><span>Beef</span><span className="meal-tally-count">{mealCounts.beef}</span></div>
         <div className="meal-tally-row"><span>Chicken</span><span className="meal-tally-count">{mealCounts.chicken}</span></div>
         <div className="meal-tally-row"><span>Vegetarian</span><span className="meal-tally-count">{mealCounts.vegetarian}</span></div>
@@ -268,6 +280,17 @@ export default function AdminDashboard() {
               {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
+        </div>
+        <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <input
+            type="checkbox"
+            id="invited_friday"
+            checked={newParty.invited_friday}
+            onChange={e => setNewParty(p => ({ ...p, invited_friday: e.target.checked }))}
+          />
+          <label htmlFor="invited_friday" className="stat-label" style={{ margin: 0, cursor: 'pointer' }}>
+            Invite to Friday dinner (April 2)
+          </label>
         </div>
         {newParty.guest_names.map((name, i) => (
           <div key={i} style={{ marginBottom: '0.5rem' }}>
@@ -303,6 +326,14 @@ export default function AdminDashboard() {
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>
                   Code: {party.code} · {party.max_guests} seat{party.max_guests !== 1 ? 's' : ''}
                 </div>
+                <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={party.invited_friday}
+                    onChange={() => toggleFridayInvite(party.id, party.invited_friday)}
+                  />
+                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Friday dinner invite</span>
+                </div>
               </td>
               <td>
                 {party.rsvp_submitted_at
@@ -318,9 +349,30 @@ export default function AdminDashboard() {
                         <>
                           <input className="edit-input" value={editForm.name || ''} placeholder="Name"
                             onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+                          {party.invited_friday && (
+                            <>
+                              <label className="stat-label" style={{ display: 'block', marginBottom: '0.3rem' }}>Friday</label>
+                              <select className="edit-select"
+                                value={editForm.attending_friday === null || editForm.attending_friday === undefined ? '' : String(editForm.attending_friday)}
+                                onChange={e => setEditForm(f => ({ ...f, attending_friday: e.target.value === '' ? null : e.target.value === 'true' }))}>
+                                <option value="">Unknown</option>
+                                <option value="true">Attending</option>
+                                <option value="false">Declined</option>
+                              </select>
+                            </>
+                          )}
+                          <label className="stat-label" style={{ display: 'block', marginBottom: '0.3rem' }}>Saturday</label>
                           <select className="edit-select"
-                            value={editForm.attending === null ? '' : String(editForm.attending)}
+                            value={editForm.attending === null || editForm.attending === undefined ? '' : String(editForm.attending)}
                             onChange={e => setEditForm(f => ({ ...f, attending: e.target.value === '' ? null : e.target.value === 'true' }))}>
+                            <option value="">Unknown</option>
+                            <option value="true">Attending</option>
+                            <option value="false">Declined</option>
+                          </select>
+                          <label className="stat-label" style={{ display: 'block', marginBottom: '0.3rem' }}>Sunday</label>
+                          <select className="edit-select"
+                            value={editForm.attending_sunday === null || editForm.attending_sunday === undefined ? '' : String(editForm.attending_sunday)}
+                            onChange={e => setEditForm(f => ({ ...f, attending_sunday: e.target.value === '' ? null : e.target.value === 'true' }))}>
                             <option value="">Unknown</option>
                             <option value="true">Attending</option>
                             <option value="false">Declined</option>
@@ -343,10 +395,13 @@ export default function AdminDashboard() {
                         <>
                           <div className="guest-name">
                             {guest.name || '(unnamed plus one)'}
-                            {' '}
-                            {guest.attending === true && <span className="badge badge-yes">Attending</span>}
-                            {guest.attending === false && <span className="badge badge-no">Declined</span>}
-                            {guest.attending === null && <span className="badge badge-pending">Pending</span>}
+                          </div>
+                          <div className="guest-detail" style={{ marginTop: '0.25rem' }}>
+                            {party.invited_friday && (
+                              <span>Fri: {guest.attending_friday === true ? '✓' : guest.attending_friday === false ? '✗' : '—'} · </span>
+                            )}
+                            <span>Sat: {guest.attending === true ? '✓' : guest.attending === false ? '✗' : '—'} · </span>
+                            <span>Sun: {guest.attending_sunday === true ? '✓' : guest.attending_sunday === false ? '✗' : '—'}</span>
                           </div>
                           {guest.meal_choice && (
                             <div className="guest-detail">
@@ -355,7 +410,7 @@ export default function AdminDashboard() {
                             </div>
                           )}
                           <button className="admin-btn" style={{ marginTop: '0.4rem' }} onClick={() => startEdit(guest)}>Edit</button>
-<button className="admin-btn admin-btn-danger" style={{ marginTop: '0.4rem' }} onClick={() => handleDeleteGuest(guest.id, guest.name)}>Remove</button>
+                          <button className="admin-btn admin-btn-danger" style={{ marginTop: '0.4rem' }} onClick={() => handleDeleteGuest(guest.id, guest.name)}>Remove</button>
                         </>
                       )}
                     </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
@@ -11,6 +11,7 @@ type Party = {
   code: string
   party_name: string
   max_guests: number
+  invited_friday: boolean
   rsvp_submitted_at: string | null
 }
 
@@ -20,8 +21,24 @@ type GuestForm = {
   is_primary: boolean
   isPreFilled: boolean
   attending: boolean | null
+  attending_friday: boolean | null
+  attending_sunday: boolean | null
   meal_choice: string
   dietary_restrictions: string
+}
+
+function PlusOneInput({ value, onChange }: { value: string, onChange: (v: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  return (
+    <input
+      ref={inputRef}
+      className="rsvp-input"
+      placeholder="Your plus one's name"
+      defaultValue={value}
+      onBlur={e => onChange(e.target.value)}
+      onChange={e => onChange(e.target.value)}
+    />
+  )
 }
 
 export default function RSVPPage() {
@@ -54,6 +71,8 @@ export default function RSVPPage() {
       is_primary: g.is_primary,
       isPreFilled: g.name !== null && g.name !== '',
       attending: g.attending,
+      attending_friday: g.attending_friday,
+      attending_sunday: g.attending_sunday,
       meal_choice: g.meal_choice || '',
       dietary_restrictions: g.dietary_restrictions || '',
     })))
@@ -69,19 +88,39 @@ export default function RSVPPage() {
     setLoading(true)
     setError('')
 
-for (let i = 0; i < guests.length; i++) {
-  const g = guests[i]
-  if (g.attending === null) {
-    setError(`Please select attending or unable to attend for ${g.name || `guest ${i + 1}`}.`)
-    setLoading(false)
-    return
-  }
-}
+    // Validate Friday if invited
+    if (party.invited_friday) {
+      for (let i = 0; i < guests.length; i++) {
+        if (guests[i].attending_friday === null) {
+          setError(`Please respond to the Friday dinner for ${guests[i].name || `guest ${i + 1}`}.`)
+          setLoading(false)
+          return
+        }
+      }
+    }
 
+    // Validate Saturday
     for (let i = 0; i < guests.length; i++) {
-      const g = guests[i]
-      if (g.attending && !g.meal_choice) {
-        setError(`Please select a meal for ${g.name || `guest ${i + 1}`}.`)
+      if (guests[i].attending === null) {
+        setError(`Please respond to the Saturday wedding for ${guests[i].name || `guest ${i + 1}`}.`)
+        setLoading(false)
+        return
+      }
+    }
+
+    // Validate meal choice if attending Saturday
+    for (let i = 0; i < guests.length; i++) {
+      if (guests[i].attending && !guests[i].meal_choice) {
+        setError(`Please select a meal for ${guests[i].name || `guest ${i + 1}`}.`)
+        setLoading(false)
+        return
+      }
+    }
+
+    // Validate Sunday
+    for (let i = 0; i < guests.length; i++) {
+      if (guests[i].attending_sunday === null) {
+        setError(`Please respond to the Sunday breakfast for ${guests[i].name || `guest ${i + 1}`}.`)
         setLoading(false)
         return
       }
@@ -91,6 +130,8 @@ for (let i = 0; i < guests.length; i++) {
       await supabase.from('guests').update({
         name: guest.name || null,
         attending: guest.attending,
+        attending_friday: party.invited_friday ? guest.attending_friday : null,
+        attending_sunday: guest.attending_sunday,
         meal_choice: guest.meal_choice || null,
         dietary_restrictions: guest.dietary_restrictions || null,
       }).eq('id', guest.id)
@@ -144,49 +185,91 @@ for (let i = 0; i < guests.length; i++) {
                       {guest.name}
                     </p>
                   ) : (
-                    <input
-                      className="rsvp-input"
-                      placeholder="Your plus one's name"
+                    <PlusOneInput
                       value={guest.name}
-                      onChange={e => updateGuest(i, 'name', e.target.value)}
+                      onChange={v => updateGuest(i, 'name', v)}
                     />
                   )}
-                  <div className="attending-toggle">
-                    <button
-                      className={`toggle-btn ${guest.attending === true ? 'active-yes' : ''}`}
-                      onClick={() => updateGuest(i, 'attending', true)}
-                    >
-                      Attending
-                    </button>
-                    <button
-                      className={`toggle-btn ${guest.attending === false ? 'active-no' : ''}`}
-                      onClick={() => updateGuest(i, 'attending', false)}
-                    >
-                      Unable to attend
-                    </button>
-                  </div>
-                  {guest.attending && (
-                    <>
-                      <select
-                        className="rsvp-select"
-                        value={guest.meal_choice}
-                        onChange={e => updateGuest(i, 'meal_choice', e.target.value)}
-                      >
-                        <option value="">Select a meal</option>
-                        <option value="beef">Beef</option>
-                        <option value="chicken">Chicken</option>
-                        <option value="vegetarian">Vegetarian</option>
-                      </select>
-                      <input
-                        className="rsvp-input"
-                        placeholder="Dietary restrictions (optional)"
-                        value={guest.dietary_restrictions}
-                        onChange={e => updateGuest(i, 'dietary_restrictions', e.target.value)}
-                      />
-                    </>
+
+                  {party.invited_friday && (
+                    <div style={{ marginBottom: '1.25rem' }}>
+                      <p className="guest-slot-label">Friday Dinner — April 2</p>
+                      <div className="attending-toggle">
+                        <button
+                          className={`toggle-btn ${guest.attending_friday === true ? 'active-yes' : ''}`}
+                          onClick={() => updateGuest(i, 'attending_friday', true)}
+                        >
+                          Attending
+                        </button>
+                        <button
+                          className={`toggle-btn ${guest.attending_friday === false ? 'active-no' : ''}`}
+                          onClick={() => updateGuest(i, 'attending_friday', false)}
+                        >
+                          Unable to attend
+                        </button>
+                      </div>
+                    </div>
                   )}
+
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <p className="guest-slot-label">Saturday Wedding — April 3</p>
+                    <div className="attending-toggle">
+                      <button
+                        className={`toggle-btn ${guest.attending === true ? 'active-yes' : ''}`}
+                        onClick={() => updateGuest(i, 'attending', true)}
+                      >
+                        Attending
+                      </button>
+                      <button
+                        className={`toggle-btn ${guest.attending === false ? 'active-no' : ''}`}
+                        onClick={() => updateGuest(i, 'attending', false)}
+                      >
+                        Unable to attend
+                      </button>
+                    </div>
+                    {guest.attending && (
+                      <>
+                        <select
+                          className="rsvp-select"
+                          value={guest.meal_choice}
+                          onChange={e => updateGuest(i, 'meal_choice', e.target.value)}
+                          style={{ marginTop: '0.75rem' }}
+                        >
+                          <option value="">Select a meal</option>
+                          <option value="beef">Beef</option>
+                          <option value="chicken">Chicken</option>
+                          <option value="vegetarian">Vegetarian</option>
+                        </select>
+                        <input
+                          className="rsvp-input"
+                          placeholder="Dietary restrictions (optional)"
+                          value={guest.dietary_restrictions}
+                          onChange={e => updateGuest(i, 'dietary_restrictions', e.target.value)}
+                        />
+                      </>
+                    )}
+                  </div>
+
+                  <div>
+                    <p className="guest-slot-label">Sunday Breakfast — April 4</p>
+                    <div className="attending-toggle">
+                      <button
+                        className={`toggle-btn ${guest.attending_sunday === true ? 'active-yes' : ''}`}
+                        onClick={() => updateGuest(i, 'attending_sunday', true)}
+                      >
+                        Attending
+                      </button>
+                      <button
+                        className={`toggle-btn ${guest.attending_sunday === false ? 'active-no' : ''}`}
+                        onClick={() => updateGuest(i, 'attending_sunday', false)}
+                      >
+                        Unable to attend
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
+
               {error && <p className="rsvp-error" style={{ marginTop: '1rem' }}>{error}</p>}
               <button
                 className="btn-primary"
