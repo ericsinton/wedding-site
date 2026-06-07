@@ -49,6 +49,7 @@ export default function RSVPPage() {
   const [party, setParty] = useState<Party | null>(null)
   const [guests, setGuests] = useState<GuestForm[]>([])
   const [isLocked, setIsLocked] = useState(false)
+  const [lockReason, setLockReason] = useState<'submitted' | 'deadline' | null>(null)
 
   useEffect(() => { loadParty() }, [])
 
@@ -78,12 +79,20 @@ export default function RSVPPage() {
       dietary_restrictions: g.dietary_restrictions || '',
     })))
 
+    if (partyData.rsvp_submitted_at) {
+      setIsLocked(true)
+      setLockReason('submitted')
+    }
+
     const { data: settingData } = await supabase
       .from('site_settings').select('value').eq('key', 'rsvp_deadline').single()
     if (settingData?.value) {
       const dl = new Date(settingData.value)
       dl.setHours(23, 59, 59, 999)
-      if (new Date() > dl) setIsLocked(true)
+      if (new Date() > dl) {
+        setIsLocked(true)
+        setLockReason('deadline')
+      }
     }
 
     setStep('form')
@@ -192,8 +201,10 @@ export default function RSVPPage() {
                 textAlign: 'center',
               }}>
                 <p style={{ fontSize: '13px', color: 'var(--bark)', fontWeight: 300 }}>
-                  The RSVP deadline has passed. Your responses are shown below.
-                  Please contact us directly if you need to make any changes.
+                  {lockReason === 'submitted'
+                    ? 'Your RSVP has already been submitted. Please contact us if you need to make any changes.'
+                    : 'The RSVP deadline has passed. Your responses are shown below. Please contact us directly if you need to make any changes.'
+                  }
                 </p>
               </div>
             )}
@@ -334,16 +345,6 @@ export default function RSVPPage() {
                   >
                     {loading ? 'Submitting...' : 'Submit RSVP'}
                   </button>
-                  <p style={{
-                    fontSize: '12px',
-                    color: 'var(--muted)',
-                    textAlign: 'center',
-                    marginTop: '1rem',
-                    fontStyle: 'italic',
-                    fontFamily: 'Cormorant Garamond, serif',
-                  }}>
-                    You can always resubmit before the RSVP deadline.
-                  </p>
                 </>
               )}
             </div>
