@@ -9,6 +9,7 @@ export default function HomeRetro() {
   const router = useRouter()
   const [authed, setAuthed] = useState(false)
   const [visitor] = useState(() => Math.floor(Math.random() * 9000) + 1000)
+  const [time, setTime] = useState('')
 
   useEffect(() => {
     const code = getCode()
@@ -17,6 +18,10 @@ export default function HomeRetro() {
     } else {
       setAuthed(true)
     }
+    const tick = () => setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
   }, [router])
 
   if (!authed) return null
@@ -97,11 +102,6 @@ export default function HomeRetro() {
           font-size: 12px;
         }
 
-        @keyframes marquee {
-  from { transform: translateX(100vw); }
-  to { transform: translateX(-100%); }
-}
-
         .win98-menuitem:hover {
           background: #000080;
           color: white;
@@ -137,10 +137,6 @@ export default function HomeRetro() {
           border-color: #808080 #ffffff #ffffff #808080;
         }
 
-        .win98-btn:active {
-          border-color: #808080 #ffffff #ffffff #808080;
-        }
-
         .win98-heading {
           font-size: 18px;
           font-weight: bold;
@@ -168,13 +164,8 @@ export default function HomeRetro() {
           border: 1px solid #808080;
         }
 
-        .win98-table tr:nth-child(odd) {
-          background: #ffffff;
-        }
-
-        .win98-table tr:nth-child(even) {
-          background: #efefef;
-        }
+        .win98-table tr:nth-child(odd) { background: #ffffff; }
+        .win98-table tr:nth-child(even) { background: #efefef; }
 
         .win98-statusbar {
           background: #c0c0c0;
@@ -191,7 +182,7 @@ export default function HomeRetro() {
           padding: 1px 8px;
         }
 
-        .win98-marquee {
+        .win98-marquee-wrap {
           background: #000080;
           color: #ffff00;
           padding: 4px;
@@ -200,17 +191,16 @@ export default function HomeRetro() {
           white-space: nowrap;
         }
 
+        .win98-marquee-inner {
+          display: inline-block;
+          animation: marqueeScroll 22s linear infinite;
+        }
+
         .win98-divider {
           border: none;
           border-top: 1px solid #808080;
           border-bottom: 1px solid #ffffff;
           margin: 8px 0;
-        }
-
-        .win98-icon {
-          font-size: 24px;
-          text-align: center;
-          margin-bottom: 4px;
         }
 
         .win98-counter {
@@ -265,14 +255,6 @@ export default function HomeRetro() {
           font-size: 11px;
         }
 
-        .blink {
-          animation: blink 1s step-end infinite;
-        }
-
-        @keyframes blink {
-          50% { opacity: 0; }
-        }
-
         .win98-under-construction {
           display: flex;
           align-items: center;
@@ -283,18 +265,91 @@ export default function HomeRetro() {
           justify-content: center;
           margin: 8px 0;
         }
+
+        /* Emoticon animations */
+        .emo {
+          display: inline-block;
+          font-style: normal;
+          font-weight: bold;
+          color: #ff6600;
+        }
+
+        .emo-bounce {
+          display: inline-block;
+          animation: bounce 0.6s infinite alternate;
+          font-weight: bold;
+          color: #ff6600;
+        }
+
+        .emo-spin {
+          display: inline-block;
+          animation: spin 2s linear infinite;
+          font-weight: bold;
+          color: #000080;
+        }
+
+        .emo-flash {
+          display: inline-block;
+          animation: flash 0.8s step-end infinite;
+          font-weight: bold;
+          color: #ff0000;
+        }
+
+        .emo-wave {
+          display: inline-block;
+          animation: wave 1s ease-in-out infinite alternate;
+          font-weight: bold;
+          color: #008000;
+        }
+
+        .emo-shake {
+          display: inline-block;
+          animation: shake 0.4s linear infinite;
+          font-weight: bold;
+          color: #800080;
+        }
+
+        @keyframes marqueeScroll {
+          from { transform: translateX(100vw); }
+          to { transform: translateX(-100%); }
+        }
+
+        @keyframes bounce {
+          from { transform: translateY(0px); }
+          to { transform: translateY(-6px); }
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes flash {
+          50% { opacity: 0; }
+        }
+
+        @keyframes wave {
+          from { transform: rotate(-15deg); }
+          to { transform: rotate(15deg); }
+        }
+
+        @keyframes shake {
+          0% { transform: translateX(0); }
+          25% { transform: translateX(-2px); }
+          75% { transform: translateX(2px); }
+          100% { transform: translateX(0); }
+        }
       `}</style>
 
       <div className="win98-desktop" style={{ paddingBottom: '40px' }}>
 
-        {/* Main Window */}
         <div className="win98-window">
           <div className="win98-titlebar">
-            <span>💒 Eric & Kate&apos;s Wedding Website - Microsoft Internet Explorer</span>
+            <span>[ Eric & Kate&apos;s Wedding Website ] - Microsoft Internet Explorer</span>
             <div className="win98-titlebar-buttons">
               <div className="win98-titlebar-btn">_</div>
-              <div className="win98-titlebar-btn">□</div>
-              <div className="win98-titlebar-btn">✕</div>
+              <div className="win98-titlebar-btn">[]</div>
+              <div className="win98-titlebar-btn">X</div>
             </div>
           </div>
           <div className="win98-menubar">
@@ -304,15 +359,19 @@ export default function HomeRetro() {
             <span className="win98-menuitem">Favorites</span>
             <span className="win98-menuitem">Help</span>
           </div>
-          <div className="win98-marquee">
-            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
-  <span style={{ display: 'inline-block', animation: 'marquee 20s linear infinite' }}>
-    ✨ WELCOME TO ERIC AND KATE&apos;S WEDDING WEBSITE ✨ — April 3, 2027 — The Lakehouse, Halifax MA — YOU ARE INVITED!! ✨
-  </span>
-</div>
+          <div className="win98-marquee-wrap">
+            <span className="win98-marquee-inner">
+              <span className="emo">:-)</span> WELCOME TO ERIC AND KATE&apos;S WEDDING WEBSITE <span className="emo">:-)</span> — April 3, 2027 — The Lakehouse, Halifax MA — YOU ARE INVITED!! <span className="emo">:-D</span>
+            </span>
           </div>
           <div className="win98-content">
-            <div className="win98-icon">💍</div>
+
+            <div style={{ textAlign: 'center', fontSize: '28px', marginBottom: '4px', letterSpacing: '8px' }}>
+              <span className="emo-bounce">:-)</span>
+              <span className="emo-wave" style={{ marginLeft: '8px' }}>&lt;3</span>
+              <span className="emo-bounce" style={{ marginLeft: '8px', animationDelay: '0.3s' }}>:-)</span>
+            </div>
+
             <div className="win98-heading">
               ~ Eric Sinton & Kate Lamberti ~<br />
               are getting MARRIED!!!
@@ -322,26 +381,26 @@ export default function HomeRetro() {
             </div>
 
             <div className="win98-under-construction">
-              <span className="blink">🚧</span>
+              <span className="emo-flash">[!!!]</span>
               THIS SITE IS UNDER CONSTRUCTION — PLEASE PARDON OUR DUST!!
-              <span className="blink">🚧</span>
+              <span className="emo-flash">[!!!]</span>
             </div>
 
             <hr className="win98-divider" />
 
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-              <Link href="/rsvp" className="win98-btn">📋 RSVP Here!!</Link>
-              <Link href="/our-story" className="win98-btn">💑 Our Story</Link>
-              <Link href="/travel" className="win98-btn">🗺️ Travel Info</Link>
-              <Link href="/registry" className="win98-btn">🎁 Registry</Link>
-              <Link href="/faq" className="win98-btn">❓ FAQ</Link>
+              <Link href="/rsvp" className="win98-btn">[RSVP] RSVP Here!!</Link>
+              <Link href="/our-story" className="win98-btn">[&lt;3] Our Story</Link>
+              <Link href="/travel" className="win98-btn">[&gt;&gt;] Travel Info</Link>
+              <Link href="/registry" className="win98-btn">[$] Registry</Link>
+              <Link href="/faq" className="win98-btn">[?] FAQ</Link>
             </div>
 
             <hr className="win98-divider" />
 
             <div className="win98-inset">
               <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '13px' }}>
-                📅 Wedding Details
+                [i] Wedding Details
               </div>
               <table className="win98-table">
                 <tbody>
@@ -367,62 +426,60 @@ export default function HomeRetro() {
 
             <div className="win98-inset">
               <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '13px' }}>
-                💌 A Note From The Couple
+                [*] A Note From The Couple
               </div>
               <p style={{ fontSize: '12px', margin: 0, lineHeight: '1.6' }}>
-                We are SO excited to celebrate our special day with you!!
+                We are SO excited to celebrate our special day with you!! <span className="emo-bounce" style={{ fontSize: '11px' }}>:-D</span>
                 Please use this website to RSVP and find all the info you need.
-                Don&apos;t forget to sign our guestbook!! Best viewed in Internet Explorer 6.0
-                at 800x600 resolution. 😊
+                Don&apos;t forget to sign our guestbook!! 
+                at 800x600 resolution. <span className="emo" style={{ color: '#008000' }}>^_^</span>
               </p>
             </div>
 
             <div className="win98-counter">
-              You are visitor #{String(visitor).padStart(6, '0')} 🌟
+              <span className="emo-spin" style={{ fontSize: '10px', marginRight: '6px' }}>*</span>
+              You are visitor #{String(visitor).padStart(6, '0')}
+              <span className="emo-spin" style={{ fontSize: '10px', marginLeft: '6px' }}>*</span>
             </div>
 
             <hr className="win98-divider" />
 
             <div style={{ textAlign: 'center', fontSize: '11px', color: '#808080' }}>
-              © 2027 Eric & Kate · Made with ❤️ and Microsoft FrontPage 98
+              (c) 2027 Eric & Kate · Made with <span className="emo-shake" style={{ fontSize: '10px' }}>&lt;3</span> and Microsoft FrontPage 98
             </div>
           </div>
           <div className="win98-statusbar">
-            <div className="win98-statusbar-panel">✅ Done</div>
-            <div className="win98-statusbar-panel">🌐 Internet zone</div>
+            <div className="win98-statusbar-panel">[OK] Done</div>
+            <div className="win98-statusbar-panel">[www] Internet zone</div>
           </div>
         </div>
 
-        {/* Second Window - Guestbook */}
         <div className="win98-window" style={{ maxWidth: '700px' }}>
           <div className="win98-titlebar">
-            <span>📖 Guestbook - Notepad</span>
+            <span>[~] Guestbook - Notepad</span>
             <div className="win98-titlebar-buttons">
               <div className="win98-titlebar-btn">_</div>
-              <div className="win98-titlebar-btn">□</div>
-              <div className="win98-titlebar-btn">✕</div>
+              <div className="win98-titlebar-btn">[]</div>
+              <div className="win98-titlebar-btn">X</div>
             </div>
           </div>
           <div className="win98-content">
             <div style={{ fontSize: '12px', lineHeight: '1.8' }}>
-              <div><b>CoolDude1998:</b> congrats you two!! can&apos;t wait for the big day!! 🎉</div>
-              <div><b>WeddingFan2027:</b> omg SO exciting!! see u there!!</div>
-              <div><b>xX_BestMan_Xx:</b> open bar better be good lol jk love u guys</div>
-              <div><b>GrumpyUncle:</b> what is a website. how do I print this</div>
+              <div><b>CoolDude1998:</b> congrats you two!! can&apos;t wait for the big day!! <span className="emo-bounce" style={{ fontSize: '11px' }}>:-D</span></div>
+              <div><b>WeddingFan2027:</b> omg SO exciting!! see u there!! <span className="emo" style={{ color: '#ff6600' }}>:*)</span></div>
+              <div><b>xX_BestMan_Xx:</b> open bar better be good lol jk love u guys <span className="emo-wave" style={{ fontSize: '11px' }}>O:)</span></div>
+              <div><b>YourGreatUncle:</b> what is a website. how do I print this <span className="emo">:-/</span></div>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* Taskbar */}
       <div className="win98-taskbar">
-        <button className="win98-start-btn">🪟 Start</button>
-        <div className="win98-taskbar-window">💒 Wedding Website</div>
-        <div className="win98-taskbar-window">📖 Guestbook</div>
-        <div className="win98-clock">
-          {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </div>
+        <button className="win98-start-btn">[>>] Start</button>
+        <div className="win98-taskbar-window">[ie] Wedding Website</div>
+        <div className="win98-taskbar-window">[~] Guestbook</div>
+        <div className="win98-clock">{time}</div>
       </div>
     </>
   )
