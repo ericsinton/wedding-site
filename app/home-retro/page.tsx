@@ -97,6 +97,11 @@ export default function HomeRetro() {
           font-size: 12px;
         }
 
+        @keyframes marquee {
+  from { transform: translateX(100vw); }
+  to { transform: translateX(-100%); }
+}
+
         .win98-menuitem:hover {
           background: #000080;
           color: white;
@@ -300,7 +305,11 @@ export default function HomeRetro() {
             <span className="win98-menuitem">Help</span>
           </div>
           <div className="win98-marquee">
-            <marquee>✨ WELCOME TO ERIC AND KATE&apos;S WEDDING WEBSITE ✨ — April 3, 2027 — The Lakehouse, Halifax MA — YOU ARE INVITED!! ✨</marquee>
+            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+  <span style={{ display: 'inline-block', animation: 'marquee 20s linear infinite' }}>
+    ✨ WELCOME TO ERIC AND KATE&apos;S WEDDING WEBSITE ✨ — April 3, 2027 — The Lakehouse, Halifax MA — YOU ARE INVITED!! ✨
+  </span>
+</div>
           </div>
           <div className="win98-content">
             <div className="win98-icon">💍</div>
