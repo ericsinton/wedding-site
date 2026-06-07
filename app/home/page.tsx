@@ -58,7 +58,7 @@ export default function Home() {
         <div className="detail-item">
           <span className="detail-label">Ceremony</span>
           <span className="detail-value">4:00 PM</span>
-          <span className="detail-sub">Doors open at 3:30</span>
+          <span className="detail-sub">Please arrive after 3:30</span>
         </div>
         <div className="detail-item">
           <span className="detail-label">Location</span>
