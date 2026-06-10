@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { getCode } from '../lib/useAuth'
 import Nav from '../components/Nav'
@@ -25,8 +26,14 @@ export default function OurStory() {
       <Nav />
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">Our Story</p>
-        <h1 className="rsvp-heading">Coming Soon</h1>
-        <p className="rsvp-subheading">Check back here for more information.</p>
+        <Image
+          src="/our-story.jpeg"
+          alt="Eric and Kate"
+          width={480}
+          height={640}
+          style={{ width: '100%', maxWidth: '480px', height: 'auto', display: 'block' }}
+          priority
+        />
       </div>
     </>
   )
