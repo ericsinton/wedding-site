@@ -25,7 +25,6 @@ export default function Registry() {
       <Nav />
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">Registry</p>
-        <h1 className="rsvp-heading">A Note on Gifts</h1>
         <div className="rsvp-card" style={{ textAlign: 'center' }}>
           <p style={{ fontSize: '15px', lineHeight: '1.9', color: 'var(--muted)', fontWeight: 300, marginBottom: '1.5rem' }}>
             Your presence at our wedding is the greatest gift we could ask for.
