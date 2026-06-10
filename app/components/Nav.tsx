@@ -44,7 +44,7 @@ export default function Nav() {
       <Link href="/home" className="nav-monogram">E & K</Link>
       {settings?.registry && <Link href="/registry">Registry</Link>}
       {settings?.faq && <Link href="/faq">FAQ</Link>}
-      {settings?.rsvp && <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>}
+      <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
     </nav>
   )
 }
