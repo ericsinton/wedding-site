@@ -61,7 +61,7 @@ const faqs: FAQItem[] = [
   },
   {
     q: 'What if I need to change my RSVP?',
-    a: 'To make changes before the RSVP deadline, navigate back to the RSVP page — your current responses will be pre-filled. Update anything you'd like and click "Submit RSVP" again.',
+    a: "To make changes before the RSVP deadline, navigate back to the RSVP page — your current responses will be pre-filled. Update anything you'd like and click \"Submit RSVP\" again.",
   },
   {
     q: 'Can I bring a date?',
