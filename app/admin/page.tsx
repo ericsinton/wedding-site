@@ -52,6 +52,12 @@ export default function AdminDashboard() {
   const [navVisibility, setNavVisibility] = useState({
     our_story: true, travel: true, registry: true, faq: true,
   })
+  const [mealOptions, setMealOptions] = useState<{ value: string, label: string }[]>([
+    { value: 'beef', label: 'Beef' },
+    { value: 'chicken', label: 'Chicken' },
+    { value: 'vegetarian', label: 'Vegetarian' },
+  ])
+  const [newMealLabel, setNewMealLabel] = useState('')
 
   useEffect(() => { checkAuth() }, [])
 
@@ -83,6 +89,12 @@ export default function AdminDashboard() {
       .from('site_settings').select('value').eq('key', 'nav_visibility').single()
     if (navVisData?.value) {
       setNavVisibility(prev => ({ ...prev, ...JSON.parse(navVisData.value) }))
+    }
+
+    const { data: mealOptsData } = await supabase
+      .from('site_settings').select('value').eq('key', 'meal_options').single()
+    if (mealOptsData?.value) {
+      setMealOptions(JSON.parse(mealOptsData.value))
     }
 
     setLoading(false)
@@ -207,6 +219,32 @@ export default function AdminDashboard() {
     await supabase.from('site_settings').upsert({ key: 'rsvp_open', value: String(newVal) })
   }
 
+  const saveMealOptions = async (opts: typeof mealOptions) => {
+    await supabase.from('site_settings').upsert({ key: 'meal_options', value: JSON.stringify(opts) })
+  }
+
+  const addMealOption = async () => {
+    const label = newMealLabel.trim()
+    if (!label) return
+    const value = label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')
+    if (mealOptions.find(o => o.value === value)) return
+    const newOpts = [...mealOptions, { value, label }]
+    setMealOptions(newOpts)
+    setNewMealLabel('')
+    await saveMealOptions(newOpts)
+  }
+
+  const removeMealOption = async (value: string) => {
+    const count = parties.flatMap(p => p.guests).filter(g => g.meal_choice === value).length
+    if (count > 0 && !confirm(`${count} guest(s) have already selected this option. Their existing responses won't be changed, but it will no longer appear for future RSVPs. Remove it?`)) return
+    const newOpts = mealOptions.filter(o => o.value !== value)
+    setMealOptions(newOpts)
+    await saveMealOptions(newOpts)
+  }
+
+  const getMealLabel = (value: string) =>
+    mealOptions.find(o => o.value === value)?.label ?? (value.charAt(0).toUpperCase() + value.slice(1))
+
   const toggleNavItem = async (key: keyof typeof navVisibility) => {
     const newVis = { ...navVisibility, [key]: !navVisibility[key] }
     setNavVisibility(newVis)
@@ -285,11 +323,17 @@ export default function AdminDashboard() {
   const totalDeclined = parties.flatMap(p => p.guests).filter(g => g.attending === false).length
   const fridayAttending = parties.filter(p => p.invited_friday).flatMap(p => p.guests).filter(g => g.attending_friday).length
   const sundayAttending = parties.filter(p => p.invited_sunday).flatMap(p => p.guests).filter(g => g.attending_sunday).length
-  const mealCounts = {
-    beef: parties.flatMap(p => p.guests).filter(g => g.meal_choice === 'beef').length,
-    chicken: parties.flatMap(p => p.guests).filter(g => g.meal_choice === 'chicken').length,
-    vegetarian: parties.flatMap(p => p.guests).filter(g => g.meal_choice === 'vegetarian').length,
-  }
+  const allGuests = parties.flatMap(p => p.guests)
+  const mealCounts = mealOptions.reduce((acc, opt) => {
+    acc[opt.value] = allGuests.filter(g => g.meal_choice === opt.value).length
+    return acc
+  }, {} as Record<string, number>)
+  const unknownMeals = allGuests
+    .filter(g => g.meal_choice && !mealOptions.find(o => o.value === g.meal_choice))
+    .reduce((acc, g) => {
+      acc[g.meal_choice!] = (acc[g.meal_choice!] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--cream)' }}>
@@ -318,9 +362,45 @@ export default function AdminDashboard() {
 
       <div className="meal-tally">
         <p className="meal-tally-title">Saturday Meal Selections</p>
-        <div className="meal-tally-row"><span>Beef</span><span className="meal-tally-count">{mealCounts.beef}</span></div>
-        <div className="meal-tally-row"><span>Chicken</span><span className="meal-tally-count">{mealCounts.chicken}</span></div>
-        <div className="meal-tally-row"><span>Vegetarian</span><span className="meal-tally-count">{mealCounts.vegetarian}</span></div>
+        {mealOptions.map(opt => (
+          <div className="meal-tally-row" key={opt.value}>
+            <span>{opt.label}</span>
+            <span className="meal-tally-count">{mealCounts[opt.value] ?? 0}</span>
+          </div>
+        ))}
+        {Object.entries(unknownMeals).map(([val, count]) => (
+          <div className="meal-tally-row" key={val} style={{ opacity: 0.5 }}>
+            <span>{val} <em style={{ fontSize: '11px' }}>(removed option)</em></span>
+            <span className="meal-tally-count">{count}</span>
+          </div>
+        ))}
+        <hr style={{ border: 'none', borderTop: '0.5px solid var(--border)', margin: '1rem 0' }} />
+        <p className="stat-label" style={{ marginBottom: '0.75rem' }}>Manage Options</p>
+        {mealOptions.map(opt => (
+          <div key={opt.value} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+            <span style={{ fontSize: '13px', color: 'var(--charcoal)' }}>{opt.label}</span>
+            <button
+              className="admin-btn admin-btn-danger"
+              style={{ marginRight: 0 }}
+              onClick={() => removeMealOption(opt.value)}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+          <input
+            className="edit-input"
+            style={{ marginBottom: 0 }}
+            placeholder="New option (e.g. Salmon)"
+            value={newMealLabel}
+            onChange={e => setNewMealLabel(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && addMealOption()}
+          />
+          <button className="btn-primary" onClick={addMealOption} style={{ whiteSpace: 'nowrap', padding: '6px 16px' }}>
+            Add
+          </button>
+        </div>
       </div>
 
       <div className="meal-tally" style={{ marginBottom: '2.5rem' }}>
@@ -550,9 +630,9 @@ export default function AdminDashboard() {
                           <select className="edit-select" value={editForm.meal_choice || ''}
                             onChange={e => setEditForm(f => ({ ...f, meal_choice: e.target.value || null }))}>
                             <option value="">No meal selected</option>
-                            <option value="beef">Beef</option>
-                            <option value="chicken">Chicken</option>
-                            <option value="vegetarian">Vegetarian</option>
+                            {mealOptions.map(opt => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
                           </select>
                           <input className="edit-input" value={editForm.dietary_restrictions || ''} placeholder="Dietary restrictions"
                             onChange={e => setEditForm(f => ({ ...f, dietary_restrictions: e.target.value || null }))} />
@@ -575,7 +655,7 @@ export default function AdminDashboard() {
                           </div>
                           {guest.meal_choice && (
                             <div className="guest-detail">
-                              {guest.meal_choice.charAt(0).toUpperCase() + guest.meal_choice.slice(1)}
+                              {getMealLabel(guest.meal_choice)}
                               {guest.dietary_restrictions && ` · ${guest.dietary_restrictions}`}
                             </div>
                           )}

@@ -51,6 +51,11 @@ export default function RSVPPage() {
   const [party, setParty] = useState<Party | null>(null)
   const [guests, setGuests] = useState<GuestForm[]>([])
   const [isLocked, setIsLocked] = useState(false)
+  const [mealOptions, setMealOptions] = useState<{ value: string, label: string }[]>([
+    { value: 'beef', label: 'Beef' },
+    { value: 'chicken', label: 'Chicken' },
+    { value: 'vegetarian', label: 'Vegetarian' },
+  ])
 
   useEffect(() => { loadParty() }, [])
 
@@ -83,6 +88,10 @@ export default function RSVPPage() {
       meal_choice: g.meal_choice || '',
       dietary_restrictions: g.dietary_restrictions || '',
     })))
+
+    const { data: mealOptsData } = await supabase
+      .from('site_settings').select('value').eq('key', 'meal_options').single()
+    if (mealOptsData?.value) setMealOptions(JSON.parse(mealOptsData.value))
 
     const { data: settingData } = await supabase
       .from('site_settings').select('value').eq('key', 'rsvp_deadline').single()
@@ -252,7 +261,7 @@ export default function RSVPPage() {
                         </p>
                         {guest.meal_choice && (
                           <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '0.4rem', fontWeight: 300 }}>
-                            {guest.meal_choice.charAt(0).toUpperCase() + guest.meal_choice.slice(1)}
+                            {mealOptions.find(o => o.value === guest.meal_choice)?.label ?? (guest.meal_choice.charAt(0).toUpperCase() + guest.meal_choice.slice(1))}
                             {guest.dietary_restrictions && ` · ${guest.dietary_restrictions}`}
                           </p>
                         )}
@@ -282,9 +291,9 @@ export default function RSVPPage() {
                               style={{ marginTop: '0.75rem' }}
                             >
                               <option value="">Select a meal</option>
-                              <option value="beef">Beef</option>
-                              <option value="chicken">Chicken</option>
-                              <option value="vegetarian">Vegetarian</option>
+                              {mealOptions.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
                             </select>
                             <input
                               className="rsvp-input"
