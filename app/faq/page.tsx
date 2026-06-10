@@ -125,11 +125,7 @@ export default function FAQ() {
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">FAQ</p>
         <h1 className="rsvp-heading">Frequently Asked Questions</h1>
-        <p className="rsvp-subheading" style={{ marginBottom: '3rem' }}>
-          Everything you need to know for the big day.
-        </p>
-
-        <div className="faq-list">
+        <div className="faq-list" style={{ marginTop: '1rem' }}>
           {faqs.map((item, i) => (
             <div key={i} className="faq-item">
               <button
