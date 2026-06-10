@@ -12,6 +12,7 @@ type Party = {
   party_name: string
   max_guests: number
   invited_friday: boolean
+  invited_sunday: boolean
   rsvp_submitted_at: string | null
 }
 
@@ -128,11 +129,13 @@ export default function RSVPPage() {
     }
 
     // Validate Sunday
-    for (let i = 0; i < guests.length; i++) {
-      if (guests[i].attending_sunday === null) {
-        setError(`Please respond to the Sunday breakfast for ${guests[i].name || `guest ${i + 1}`}.`)
-        setLoading(false)
-        return
+    if (party.invited_sunday) {
+      for (let i = 0; i < guests.length; i++) {
+        if (guests[i].attending_sunday === null) {
+          setError(`Please respond to the Sunday breakfast for ${guests[i].name || `guest ${i + 1}`}.`)
+          setLoading(false)
+          return
+        }
       }
     }
 
@@ -141,7 +144,7 @@ export default function RSVPPage() {
         name: guest.name || null,
         attending: guest.attending,
         attending_friday: party.invited_friday ? guest.attending_friday : null,
-        attending_sunday: guest.attending_sunday,
+        attending_sunday: party.invited_sunday ? guest.attending_sunday : null,
         meal_choice: guest.meal_choice || null,
         dietary_restrictions: guest.dietary_restrictions || null,
       }).eq('id', guest.id)
@@ -297,29 +300,31 @@ export default function RSVPPage() {
                     )}
                   </div>
 
-                  <div>
-                    <p className="guest-slot-label">Sunday Breakfast — April 4</p>
-                    {isLocked ? (
-                      <p style={{ fontSize: '14px', color: 'var(--charcoal)', fontWeight: 300 }}>
-                        {guest.attending_sunday === true ? 'Attending' : guest.attending_sunday === false ? 'Unable to attend' : '—'}
-                      </p>
-                    ) : (
-                      <div className="attending-toggle">
-                        <button
-                          className={`toggle-btn ${guest.attending_sunday === true ? 'active-yes' : ''}`}
-                          onClick={() => updateGuest(i, 'attending_sunday', true)}
-                        >
-                          Attending
-                        </button>
-                        <button
-                          className={`toggle-btn ${guest.attending_sunday === false ? 'active-no' : ''}`}
-                          onClick={() => updateGuest(i, 'attending_sunday', false)}
-                        >
-                          Unable to attend
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  {party.invited_sunday && (
+                    <div>
+                      <p className="guest-slot-label">Sunday Breakfast — April 4</p>
+                      {isLocked ? (
+                        <p style={{ fontSize: '14px', color: 'var(--charcoal)', fontWeight: 300 }}>
+                          {guest.attending_sunday === true ? 'Attending' : guest.attending_sunday === false ? 'Unable to attend' : '—'}
+                        </p>
+                      ) : (
+                        <div className="attending-toggle">
+                          <button
+                            className={`toggle-btn ${guest.attending_sunday === true ? 'active-yes' : ''}`}
+                            onClick={() => updateGuest(i, 'attending_sunday', true)}
+                          >
+                            Attending
+                          </button>
+                          <button
+                            className={`toggle-btn ${guest.attending_sunday === false ? 'active-no' : ''}`}
+                            onClick={() => updateGuest(i, 'attending_sunday', false)}
+                          >
+                            Unable to attend
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
 

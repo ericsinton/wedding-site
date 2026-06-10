@@ -22,6 +22,7 @@ type Party = {
   code: string
   max_guests: number
   invited_friday: boolean
+  invited_sunday: boolean
   is_retro: boolean
   rsvp_submitted_at: string | null
   guests: Guest[]
@@ -39,6 +40,7 @@ export default function AdminDashboard() {
     max_guests: '1',
     guest_names: [''],
     invited_friday: false,
+    invited_sunday: false,
   })
   const [addError, setAddError] = useState('')
   const [addSuccess, setAddSuccess] = useState('')
@@ -97,7 +99,7 @@ export default function AdminDashboard() {
             guest.name || '(unnamed)',
             party.invited_friday ? (guest.attending_friday === true ? 'Attending' : guest.attending_friday === false ? 'Declined' : 'Pending') : 'N/A',
             guest.attending === true ? 'Attending' : guest.attending === false ? 'Declined' : 'Pending',
-            guest.attending_sunday === true ? 'Attending' : guest.attending_sunday === false ? 'Declined' : 'Pending',
+            party.invited_sunday ? (guest.attending_sunday === true ? 'Attending' : guest.attending_sunday === false ? 'Declined' : 'Pending') : 'N/A',
             guest.meal_choice || '—',
             guest.dietary_restrictions || '—',
           ])
@@ -139,6 +141,7 @@ export default function AdminDashboard() {
         code: newParty.code.toUpperCase().trim(),
         max_guests: parseInt(newParty.max_guests),
         invited_friday: newParty.invited_friday,
+        invited_sunday: newParty.invited_sunday,
       })
       .select()
       .single()
@@ -163,13 +166,18 @@ export default function AdminDashboard() {
     await supabase.from('guests').insert(guestsToInsert)
 
     setAddSuccess(`${newParty.party_name} added successfully.`)
-    setNewParty({ party_name: '', code: '', max_guests: '1', guest_names: [''], invited_friday: false })
+    setNewParty({ party_name: '', code: '', max_guests: '1', guest_names: [''], invited_friday: false, invited_sunday: false })
     setAdding(false)
     fetchData()
   }
 
   const toggleFridayInvite = async (partyId: string, current: boolean) => {
     await supabase.from('guest_parties').update({ invited_friday: !current }).eq('id', partyId)
+    fetchData()
+  }
+
+  const toggleSundayInvite = async (partyId: string, current: boolean) => {
+    await supabase.from('guest_parties').update({ invited_sunday: !current }).eq('id', partyId)
     fetchData()
   }
 
@@ -249,7 +257,7 @@ export default function AdminDashboard() {
   const totalAttending = parties.flatMap(p => p.guests).filter(g => g.attending).length
   const totalDeclined = parties.flatMap(p => p.guests).filter(g => g.attending === false).length
   const fridayAttending = parties.filter(p => p.invited_friday).flatMap(p => p.guests).filter(g => g.attending_friday).length
-  const sundayAttending = parties.flatMap(p => p.guests).filter(g => g.attending_sunday).length
+  const sundayAttending = parties.filter(p => p.invited_sunday).flatMap(p => p.guests).filter(g => g.attending_sunday).length
   const mealCounts = {
     beef: parties.flatMap(p => p.guests).filter(g => g.meal_choice === 'beef').length,
     chicken: parties.flatMap(p => p.guests).filter(g => g.meal_choice === 'chicken').length,
@@ -345,6 +353,17 @@ export default function AdminDashboard() {
             Invite to Friday dinner (April 2)
           </label>
         </div>
+        <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <input
+            type="checkbox"
+            id="invited_sunday"
+            checked={newParty.invited_sunday}
+            onChange={e => setNewParty(p => ({ ...p, invited_sunday: e.target.checked }))}
+          />
+          <label htmlFor="invited_sunday" className="stat-label" style={{ margin: 0, cursor: 'pointer' }}>
+            Invite to Sunday brunch (April 4)
+          </label>
+        </div>
         {newParty.guest_names.map((name, i) => (
           <div key={i} style={{ marginBottom: '0.5rem' }}>
             <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>
@@ -386,6 +405,14 @@ export default function AdminDashboard() {
                     onChange={() => toggleFridayInvite(party.id, party.invited_friday)}
                   />
                   <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Friday dinner invite</span>
+                </div>
+                <div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={party.invited_sunday}
+                    onChange={() => toggleSundayInvite(party.id, party.invited_sunday)}
+                  />
+                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Sunday brunch invite</span>
                 </div>
                 <div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <input
