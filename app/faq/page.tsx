@@ -69,11 +69,14 @@ const faqs: FAQItem[] = [
   },
   {
     q: 'What is the dress code?',
-    a: 'The dress code is garden formal. Please wear something you feel comfortable in. Note that the outdoor ceremony takes place on grass, so please be mindful of your footwear.',
+    a: 'The dress code is dressy casual. Please wear something you feel comfortable in. Note that the outdoor ceremony takes place on grass, so please be mindful of your footwear.',
   },
   {
     q: 'Can I take photos during the ceremony?',
-    a: 'We kindly ask that you refrain from taking any photos or videos during the ceremony. We encourage photo-taking during the cocktail hour and reception — we'd love to see your shots!',
+    a: <>
+      We kindly ask that you refrain from taking any photos or videos during the ceremony. We encourage photo-taking during the cocktail hour and reception — please share your photos and videos with us at{' '}
+      <a href="mailto:ericandkate27@gmail.com">ericandkate27@gmail.com</a>!
+    </>,
   },
   {
     q: 'What if I have an allergy or dietary restriction?',

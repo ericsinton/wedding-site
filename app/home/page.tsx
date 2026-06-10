@@ -68,8 +68,8 @@ export default function Home() {
         </div>
         <div className="detail-item">
           <span className="detail-label">Dress Code</span>
-          <span className="detail-value">Garden Formal</span>
-          <span className="detail-sub">Black tie optional</span>
+          <span className="detail-value">Dressy Casual</span>
+          <span className="detail-sub">Please dress comfortably</span>
         </div>
       </section>
 
