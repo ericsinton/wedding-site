@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getCode } from '../lib/useAuth'
+import Nav from '../components/Nav'
 
 export default function Home() {
   const router = useRouter()
@@ -22,14 +23,7 @@ export default function Home() {
 
   return (
     <>
-      <nav>
-        <Link href="/our-story">Our Story</Link>
-        <Link href="/travel">Travel</Link>
-        <Link href="/home" className="nav-monogram">E & K</Link>
-        <Link href="/registry">Registry</Link>
-        <Link href="/faq">FAQ</Link>
-        <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
-      </nav>
+      <Nav />
 
       <section className="hero">
         <div className="hero-texture" />

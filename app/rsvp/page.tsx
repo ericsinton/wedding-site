@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { getCode, getTheme } from '../lib/useAuth'
+import Nav from '../components/Nav'
 
 type Party = {
   id: string
@@ -44,7 +45,7 @@ function PlusOneInput({ value, onChange }: { value: string, onChange: (v: string
 
 export default function RSVPPage() {
   const router = useRouter()
-  const [step, setStep] = useState<'loading' | 'form' | 'confirmed'>('loading')
+  const [step, setStep] = useState<'loading' | 'closed' | 'form' | 'confirmed'>('loading')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [party, setParty] = useState<Party | null>(null)
@@ -56,6 +57,10 @@ export default function RSVPPage() {
   const loadParty = async () => {
     const code = getCode()
     if (!code) { router.push('/'); return }
+
+    const { data: rsvpOpenData } = await supabase
+      .from('site_settings').select('value').eq('key', 'rsvp_open').single()
+    if (rsvpOpenData?.value !== 'true') { setStep('closed'); return }
 
     const { data: partyData, error: partyError } = await supabase
       .from('guest_parties').select('*').eq('code', code).single()
@@ -166,14 +171,7 @@ export default function RSVPPage() {
 
   return (
     <>
-<nav>
-  <Link href="/our-story">Our Story</Link>
-  <Link href="/travel">Travel</Link>
-  <Link href="/home" className="nav-monogram">E & K</Link>
-  <Link href="/registry">Registry</Link>
-  <Link href="/faq">FAQ</Link>
-  <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
-</nav>
+      <Nav />
       <div className="rsvp-page">
         {step === 'form' && party && (
           <>
@@ -353,6 +351,17 @@ export default function RSVPPage() {
               )}
             </div>
           </>
+        )}
+
+        {step === 'closed' && (
+          <div className="confirmed-wrap">
+            <div className="confirmed-icon">✦</div>
+            <h1 className="confirmed-heading">RSVP Coming Soon</h1>
+            <p className="confirmed-body">
+              We&apos;ll be opening RSVPs shortly. Check back here once you receive your formal invitation.
+            </p>
+            <Link href="/home" className="btn-primary">Back to Home</Link>
+          </div>
         )}
 
         {step === 'confirmed' && (

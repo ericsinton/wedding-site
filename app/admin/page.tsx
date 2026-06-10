@@ -48,6 +48,10 @@ export default function AdminDashboard() {
   const [deadline, setDeadline] = useState<string>('')
   const [deadlineSaving, setDeadlineSaving] = useState(false)
   const [deadlineSaved, setDeadlineSaved] = useState(false)
+  const [rsvpOpen, setRsvpOpen] = useState(false)
+  const [navVisibility, setNavVisibility] = useState({
+    our_story: true, travel: true, registry: true, faq: true,
+  })
 
   useEffect(() => { checkAuth() }, [])
 
@@ -70,6 +74,17 @@ export default function AdminDashboard() {
     const { data: settingData } = await supabase
       .from('site_settings').select('value').eq('key', 'rsvp_deadline').single()
     setDeadline(settingData?.value || '')
+
+    const { data: rsvpOpenData } = await supabase
+      .from('site_settings').select('value').eq('key', 'rsvp_open').single()
+    setRsvpOpen(rsvpOpenData?.value === 'true')
+
+    const { data: navVisData } = await supabase
+      .from('site_settings').select('value').eq('key', 'nav_visibility').single()
+    if (navVisData?.value) {
+      setNavVisibility(prev => ({ ...prev, ...JSON.parse(navVisData.value) }))
+    }
+
     setLoading(false)
   }
 
@@ -186,6 +201,18 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const toggleRsvpOpen = async () => {
+    const newVal = !rsvpOpen
+    setRsvpOpen(newVal)
+    await supabase.from('site_settings').upsert({ key: 'rsvp_open', value: String(newVal) })
+  }
+
+  const toggleNavItem = async (key: keyof typeof navVisibility) => {
+    const newVis = { ...navVisibility, [key]: !navVisibility[key] }
+    setNavVisibility(newVis)
+    await supabase.from('site_settings').upsert({ key: 'nav_visibility', value: JSON.stringify(newVis) })
+  }
+
   const saveDeadline = async () => {
     setDeadlineSaving(true)
     await supabase.from('site_settings').upsert({ key: 'rsvp_deadline', value: deadline || null })
@@ -294,6 +321,61 @@ export default function AdminDashboard() {
         <div className="meal-tally-row"><span>Beef</span><span className="meal-tally-count">{mealCounts.beef}</span></div>
         <div className="meal-tally-row"><span>Chicken</span><span className="meal-tally-count">{mealCounts.chicken}</span></div>
         <div className="meal-tally-row"><span>Vegetarian</span><span className="meal-tally-count">{mealCounts.vegetarian}</span></div>
+      </div>
+
+      <div className="meal-tally" style={{ marginBottom: '2.5rem' }}>
+        <p className="meal-tally-title">Site Controls</p>
+
+        <div style={{ marginBottom: '1.75rem' }}>
+          <p className="stat-label" style={{ marginBottom: '0.75rem' }}>RSVP</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={toggleRsvpOpen}
+              style={{
+                padding: '6px 20px',
+                fontSize: '10px',
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                fontFamily: 'Lato, sans-serif',
+                border: '0.5px solid',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                background: rsvpOpen ? 'var(--sage)' : 'transparent',
+                borderColor: rsvpOpen ? 'var(--sage)' : 'var(--border)',
+                color: rsvpOpen ? 'white' : 'var(--muted)',
+              }}
+            >
+              {rsvpOpen ? 'Open' : 'Closed'}
+            </button>
+            <span style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: 300 }}>
+              {rsvpOpen
+                ? 'Guests can currently submit RSVPs.'
+                : 'RSVP page is hidden and disabled for guests.'}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <p className="stat-label" style={{ marginBottom: '0.75rem' }}>Navigation Items</p>
+          {([
+            { key: 'our_story', label: 'Our Story' },
+            { key: 'travel', label: 'Travel' },
+            { key: 'registry', label: 'Registry' },
+            { key: 'faq', label: 'FAQ' },
+          ] as const).map(({ key, label }) => (
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
+              <input
+                type="checkbox"
+                id={`nav_${key}`}
+                checked={navVisibility[key]}
+                onChange={() => toggleNavItem(key)}
+              />
+              <label htmlFor={`nav_${key}`} className="stat-label" style={{ margin: 0, cursor: 'pointer' }}>
+                {label}
+              </label>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="meal-tally" style={{ marginBottom: '2.5rem' }}>

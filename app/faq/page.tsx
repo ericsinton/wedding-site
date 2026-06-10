@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getCode } from '../lib/useAuth'
+import Nav from '../components/Nav'
 
 type FAQItem = {
   q: string
@@ -114,14 +115,7 @@ export default function FAQ() {
 
   return (
     <>
-      <nav>
-        <Link href="/our-story">Our Story</Link>
-        <Link href="/travel">Travel</Link>
-        <Link href="/home" className="nav-monogram">E & K</Link>
-        <Link href="/registry">Registry</Link>
-        <Link href="/faq" style={{ color: 'var(--gold)' }}>FAQ</Link>
-        <Link href="/rsvp">RSVP</Link>
-      </nav>
+      <Nav />
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">FAQ</p>
         <h1 className="rsvp-heading">Frequently Asked Questions</h1>

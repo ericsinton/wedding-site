@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getCode } from '../lib/useAuth'
+import Nav from '../components/Nav'
 
 export default function Travel() {
   const router = useRouter()
@@ -22,14 +22,7 @@ export default function Travel() {
 
   return (
     <>
-      <nav>
-        <Link href="/our-story">Our Story</Link>
-        <Link href="/travel">Travel</Link>
-        <Link href="/home" className="nav-monogram">E & K</Link>
-        <Link href="/registry">Registry</Link>
-        <Link href="/faq">FAQ</Link>
-        <Link href="/rsvp" style={{ color: 'var(--gold)' }}>RSVP</Link>
-      </nav>
+      <Nav />
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">Travel & Hotels</p>
         <h1 className="rsvp-heading">Coming Soon</h1>
