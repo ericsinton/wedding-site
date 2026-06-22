@@ -2,23 +2,44 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { getCode } from '../lib/useAuth'
+import { getCode, getIsFamily } from '../lib/useAuth'
 import Nav from '../components/Nav'
 
 export default function Registry() {
   const router = useRouter()
   const [authed, setAuthed] = useState(false)
+  const [isFamily, setIsFamily] = useState(false)
 
   useEffect(() => {
     const code = getCode()
     if (!code) {
       router.push('/')
     } else {
+      setIsFamily(getIsFamily())
       setAuthed(true)
     }
   }, [router])
 
   if (!authed) return null
+
+  if (isFamily) {
+    return (
+      <>
+        <Nav />
+        <div className="rsvp-page">
+          <p className="rsvp-eyebrow">Registry</p>
+          <div className="rsvp-card" style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: '15px', lineHeight: '1.9', color: 'var(--muted)', fontWeight: 300 }}>
+              Over the next few years, we will have to relocate apartments at least once.
+              In lieu of wrapped gifts, we would be incredibly grateful for contributions
+              toward beginning our new life together — toward our first real furniture,
+              toward our first home.
+            </p>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>

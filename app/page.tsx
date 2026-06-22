@@ -28,7 +28,7 @@ export default function Gate() {
 
     const { data, error: dbError } = await supabase
       .from('guest_parties')
-      .select('id, is_retro')
+      .select('id, is_retro, is_family')
       .eq('code', code.toUpperCase().trim())
       .single()
 
@@ -38,7 +38,7 @@ export default function Gate() {
       return
     }
 
-    saveCode(code.toUpperCase().trim(), data.is_retro)
+    saveCode(code.toUpperCase().trim(), data.is_retro, data.is_family)
     router.push(data.is_retro ? '/home-retro' : '/home')
   }
 

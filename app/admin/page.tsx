@@ -24,6 +24,7 @@ type Party = {
   invited_friday: boolean
   invited_sunday: boolean
   is_retro: boolean
+  is_family: boolean
   rsvp_submitted_at: string | null
   guests: Guest[]
 }
@@ -41,6 +42,7 @@ export default function AdminDashboard() {
     guest_names: [''],
     invited_friday: false,
     invited_sunday: false,
+    is_family: false,
   })
   const [addError, setAddError] = useState('')
   const [addSuccess, setAddSuccess] = useState('')
@@ -169,6 +171,7 @@ export default function AdminDashboard() {
         max_guests: parseInt(newParty.max_guests),
         invited_friday: newParty.invited_friday,
         invited_sunday: newParty.invited_sunday,
+        is_family: newParty.is_family,
       })
       .select()
       .single()
@@ -193,7 +196,7 @@ export default function AdminDashboard() {
     await supabase.from('guests').insert(guestsToInsert)
 
     setAddSuccess(`${newParty.party_name} added successfully.`)
-    setNewParty({ party_name: '', code: '', max_guests: '1', guest_names: [''], invited_friday: false, invited_sunday: false })
+    setNewParty({ party_name: '', code: '', max_guests: '1', guest_names: [''], invited_friday: false, invited_sunday: false, is_family: false })
     setAdding(false)
     fetchData()
   }
@@ -210,6 +213,11 @@ export default function AdminDashboard() {
 
   const toggleRetro = async (partyId: string, current: boolean) => {
     await supabase.from('guest_parties').update({ is_retro: !current }).eq('id', partyId)
+    fetchData()
+  }
+
+  const toggleFamily = async (partyId: string, current: boolean) => {
+    await supabase.from('guest_parties').update({ is_family: !current }).eq('id', partyId)
     fetchData()
   }
 
@@ -526,6 +534,17 @@ export default function AdminDashboard() {
             Invite to Sunday brunch (April 4)
           </label>
         </div>
+        <div style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <input
+            type="checkbox"
+            id="is_family"
+            checked={newParty.is_family}
+            onChange={e => setNewParty(p => ({ ...p, is_family: e.target.checked }))}
+          />
+          <label htmlFor="is_family" className="stat-label" style={{ margin: 0, cursor: 'pointer' }}>
+            Family (show family registry page)
+          </label>
+        </div>
         {newParty.guest_names.map((name, i) => (
           <div key={i} style={{ marginBottom: '0.5rem' }}>
             <label className="stat-label" style={{ display: 'block', marginBottom: '0.4rem' }}>
@@ -583,6 +602,14 @@ export default function AdminDashboard() {
                     onChange={() => toggleRetro(party.id, party.is_retro)}
                   />
                   <span style={{ fontSize: '11px', color: 'var(--muted)' }}>🪟 Retro mode</span>
+                </div>
+                <div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={party.is_family}
+                    onChange={() => toggleFamily(party.id, party.is_family)}
+                  />
+                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>Family registry</span>
                 </div>
               </td>
               <td>
