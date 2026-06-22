@@ -32,8 +32,7 @@ export default function Registry() {
             <p style={{ fontSize: '15px', lineHeight: '1.9', color: 'var(--muted)', fontWeight: 300 }}>
               Over the next few years, we will have to relocate apartments at least once.
               In lieu of wrapped gifts, we would be incredibly grateful for contributions
-              toward beginning our new life together — toward our first real furniture,
-              toward our first home.
+              toward the beginning of our new life together and making a new place home.
             </p>
           </div>
         </div>
