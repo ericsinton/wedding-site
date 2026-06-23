@@ -354,7 +354,7 @@ export default function RSVPPage() {
                     fontStyle: 'italic',
                     fontFamily: 'Cormorant Garamond, serif',
                   }}>
-                    You can always resubmit before the RSVP deadline.
+                    You can make any changes before the RSVP deadline — just click Submit RSVP.
                   </p>
                 </>
               )}
