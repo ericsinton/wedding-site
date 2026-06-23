@@ -654,15 +654,19 @@ export default function AdminDashboard() {
                             <option value="true">Attending</option>
                             <option value="false">Declined</option>
                           </select>
-                          <select className="edit-select" value={editForm.meal_choice || ''}
-                            onChange={e => setEditForm(f => ({ ...f, meal_choice: e.target.value || null }))}>
-                            <option value="">No meal selected</option>
-                            {mealOptions.map(opt => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                          </select>
-                          <input className="edit-input" value={editForm.dietary_restrictions || ''} placeholder="Dietary restrictions"
-                            onChange={e => setEditForm(f => ({ ...f, dietary_restrictions: e.target.value || null }))} />
+                          {editForm.attending && (
+                            <>
+                              <select className="edit-select" value={editForm.meal_choice || ''}
+                                onChange={e => setEditForm(f => ({ ...f, meal_choice: e.target.value || null }))}>
+                                <option value="">No meal selected</option>
+                                {mealOptions.map(opt => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                              <input className="edit-input" value={editForm.dietary_restrictions || ''} placeholder="Dietary restrictions"
+                                onChange={e => setEditForm(f => ({ ...f, dietary_restrictions: e.target.value || null }))} />
+                            </>
+                          )}
                           <div style={{ marginTop: '0.5rem' }}>
                             <button className="admin-btn" onClick={saveEdit}>Save</button>
                             <button className="admin-btn" onClick={() => setEditingGuest(null)}>Cancel</button>
