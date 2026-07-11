@@ -6,6 +6,15 @@ import { useRouter } from 'next/navigation'
 import { getCode } from '../lib/useAuth'
 import Nav from '../components/Nav'
 
+const photos = [
+  { src: '/story-1.jpeg', alt: 'Eric and Kate' },
+  { src: '/story-2.jpeg', alt: 'Eric and Kate' },
+  { src: '/story-3.jpeg', alt: 'Eric and Kate' },
+  { src: '/story-4.jpeg', alt: 'Eric and Kate' },
+  { src: '/story-5.jpeg', alt: 'Eric and Kate' },
+  { src: '/story-6.jpeg', alt: 'Eric and Kate' },
+]
+
 export default function OurStory() {
   const router = useRouter()
   const [authed, setAuthed] = useState(false)
@@ -26,14 +35,20 @@ export default function OurStory() {
       <Nav />
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">Our Story</p>
-        <Image
-          src="/our-story.jpeg"
-          alt="Eric and Kate"
-          width={480}
-          height={640}
-          style={{ width: '100%', maxWidth: '480px', height: 'auto', display: 'block' }}
-          priority
-        />
+        <div className="story-grid">
+          {photos.map((photo, i) => (
+            <div key={i} className="story-grid-item">
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                fill
+                sizes="(max-width: 600px) 50vw, 33vw"
+                style={{ objectFit: 'cover' }}
+                priority={i < 3}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </>
   )

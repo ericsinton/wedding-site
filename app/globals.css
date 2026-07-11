@@ -891,6 +891,25 @@ footer {
   color: var(--gold);
 }
 
+.story-grid {
+  width: 100%;
+  max-width: 760px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 1.5rem;
+}
+
+.story-grid-item {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .story-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 .travel-map-wrap {
   width: 100%;
   max-width: 760px;
