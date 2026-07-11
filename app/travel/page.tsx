@@ -26,7 +26,7 @@ const transitItems: TransitItem[] = [
   {
     q: 'Driving',
     a: <>
-      The Lakehouse is approximately <strong>32 miles from downtown Boston</strong> — about a 45-minute drive without traffic. Plan ahead for the return trip, especially on a Saturday night.
+      The Lakehouse is approximately <strong>45 minutes from downtown Boston</strong> without traffic.
       <br /><br />
       <strong>From Boston / North of the venue:</strong>
       <ol style={{ paddingLeft: '1.25rem', marginTop: '0.5rem', lineHeight: '2' }}>
