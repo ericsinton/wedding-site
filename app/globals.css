@@ -890,3 +890,16 @@ footer {
 .faq-answer a:hover {
   color: var(--gold);
 }
+
+.travel-map-wrap {
+  width: 100%;
+  max-width: 760px;
+  height: 520px;
+  border: 0.5px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .travel-map-wrap { height: 400px; }
+}

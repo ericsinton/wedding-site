@@ -25,8 +25,19 @@ export default function Travel() {
       <Nav />
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">Travel & Hotels</p>
-        <h1 className="rsvp-heading">Coming Soon</h1>
-        <p className="rsvp-subheading">Check back here for more information.</p>
+        <h1 className="rsvp-heading">Getting Here</h1>
+        <p className="rsvp-subheading">Everything you need to find your way.</p>
+        <div className="travel-map-wrap">
+          <iframe
+            src="https://www.google.com/maps/d/embed?mid=1THMp9_s2-fiBwwkirhTK_jtUxIC5Lvw"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
       </div>
     </>
   )
