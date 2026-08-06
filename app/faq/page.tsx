@@ -61,7 +61,7 @@ const faqs: FAQItem[] = [
     a: "To make changes before the RSVP deadline, navigate back to the RSVP page — your current responses will be pre-filled. Update anything you'd like and click \"Submit RSVP\" again.",
   },
   {
-    q: 'Can I bring a date?',
+    q: 'May I bring a date?',
     a: 'Please check your invitation for a plus one. The names of guests invited to attend are listed on your invitation — unfortunately no additional guests can be accommodated.',
   },
   {
@@ -69,7 +69,7 @@ const faqs: FAQItem[] = [
     a: 'The dress code is dressy casual. Please wear something you feel comfortable in. Note that the outdoor ceremony takes place on grass, so please be mindful of your footwear.',
   },
   {
-    q: 'Can I take photos during the ceremony?',
+    q: 'May I take photos during the ceremony?',
     a: <>
       We kindly ask that you refrain from taking any photos or videos during the ceremony. We encourage photo-taking during the cocktail hour and reception — please share your photos and videos with us at{' '}
       <a href="mailto:ericandkate27@gmail.com">ericandkate27@gmail.com</a>!
