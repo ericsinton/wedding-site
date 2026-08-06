@@ -78,7 +78,7 @@ export default function Travel() {
       <div className="rsvp-page">
         <p className="rsvp-eyebrow">Travel & Hotels</p>
         <h1 className="rsvp-heading">Getting Here</h1>
-        <p className="rsvp-subheading">Everything you need to find your way.</p>
+        <p className="rsvp-subheading">We are so grateful that you are coming from all over to celebrate our big day! Below is some information for getting to the venue, whether driving, flying, or taking public transportation.</p>
 
         <div className="faq-list" style={{ marginTop: '1rem', marginBottom: '3rem' }}>
           {transitItems.map((item, i) => (
