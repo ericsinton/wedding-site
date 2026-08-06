@@ -26,19 +26,9 @@ const transitItems: TransitItem[] = [
   {
     q: 'Driving',
     a: <>
-      The Lakehouse is approximately <strong>45 minutes from downtown Boston</strong> without traffic.
+      The wedding and reception are located at the Lakehouse in Halifax, MA. The address is 550 Monponsett St, Halifax, MA 02338. There is plenty of on-site parking.
       <br /><br />
-      <strong>From Boston / North of the venue:</strong>
-      <ol style={{ paddingLeft: '1.25rem', marginTop: '0.5rem', lineHeight: '2' }}>
-        <li>Take <strong>I-93 South</strong> out of Boston</li>
-        <li>At Exit 7 (the Braintree Split), merge onto <strong>Route 3 South</strong></li>
-        <li>Take Route 3 South to <strong>Exit 22 (MA-14, Pembroke / Duxbury)</strong></li>
-        <li>Head west on <strong>MA-14</strong> toward Pembroke, then follow signs south toward Halifax</li>
-        <li>Continue to <strong>Route 58 South</strong> through Halifax center</li>
-        <li>Turn right onto <strong>Monponsett St</strong> — The Lakehouse will be on your right at <strong>550 Monponsett St</strong></li>
-      </ol>
-      <br />
-      There is free on-site parking at The Lakehouse. We recommend using Google Maps or Waze for real-time directions as you get closer.
+      The wedding is about an hour from both the Boston and Providence areas, but the traffic can get pretty bad, so we recommend using GPS to figure out the best route when you're on your way.
     </>,
   },
   {
