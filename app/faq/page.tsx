@@ -45,10 +45,6 @@ const faqs: FAQItem[] = [
     a: 'Temperatures this time of year are typically between 36–59°F. We recommend checking your weather app for Halifax, MA as the day approaches.',
   },
   {
-    q: 'Will there be other events on the wedding weekend?',
-    a: 'All of our guests are invited to join us for breakfast Sunday morning after the wedding.',
-  },
-  {
     q: 'Are there accommodations near the venue?',
     a: <>
       Our <Link href="/travel">Travel page</Link> lists nearby hotels and accommodations.
@@ -81,11 +77,11 @@ const faqs: FAQItem[] = [
   },
   {
     q: 'What if I have an allergy or dietary restriction?',
-    a: 'There are entrée choices to accommodate allergies and dietary restrictions, and cocktail hour appetizers will be clearly marked. Please note any allergies or dietary restrictions in your RSVP.',
+    a: 'Please note any allergies or dietary restrictions in your RSVP. There are entrée choices to accommodate allergies and dietary restrictions, and cocktail hour appetizers will be clearly marked. We will make note of your dietary request – once seated please mention your name and restriction to your server so they can serve you smoothly.',
   },
   {
     q: 'Are children welcome?',
-    a: 'Yes — please check with us if they are not listed on your invitation.',
+    a: 'The names of children invited to attend are listed on your invitation — unfortunately no additional children can be accommodated.',
   },
   {
     q: 'I still have a question. How can I reach you?',
