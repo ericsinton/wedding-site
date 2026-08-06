@@ -54,6 +54,15 @@ const transitItems: TransitItem[] = [
       </a>. We recommend checking return train times before you arrive so you can plan your evening accordingly.
     </>,
   },
+  {
+    q: 'Where to Stay',
+    a: <>
+      There are many hotels in the neighboring town of Plymouth. There is a group of hotels right next to each other that many of us will be staying in that includes the{' '}
+      <a href="https://www.cambriaplymouth.com" target="_blank" rel="noopener noreferrer">Cambria Hotel</a>, the{' '}
+      <a href="https://www.hilton.com/en/hotels/pymhshx-hampton-suites-plymouth" target="_blank" rel="noopener noreferrer">Hampton Inn and Suites</a>, and the{' '}
+      <a href="https://www.marriott.com/en-us/hotels/ewbpf-fairfield-inn-and-suites-plymouth/overview/" target="_blank" rel="noopener noreferrer">Fairfield by Marriott Inn and Suites</a> in Plymouth.
+    </>,
+  },
 ]
 
 export default function Travel() {
