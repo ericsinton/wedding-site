@@ -14,13 +14,9 @@ const transitItems: TransitItem[] = [
   {
     q: 'Flying',
     a: <>
-      <strong>We recommend flying into Boston Logan International Airport (BOS)</strong>, which is approximately 30 miles from the venue — about a 45-minute drive depending on traffic. Logan is the closest major airport and offers the most flight options.
+      For our guests who are flying into town for our wedding, we recommend flying into Boston Logan airport (BOS). It is likely the most convenient and inexpensive airport to fly into. The venue is about an hour south of the airport, but the South Shore traffic can get pretty bad (welcome to Boston…). Another airport option is TF Green in Providence (PVD), which is much smaller but also about an hour from the venue.
       <br /><br />
-      Two alternative airports are also within reasonable driving distance:
-      <ul style={{ paddingLeft: '1.25rem', marginTop: '0.5rem', lineHeight: '1.9' }}>
-        <li><strong>T.F. Green Airport (PVD)</strong> — Providence, RI, approximately 60 miles south of the venue (~1 hour drive)</li>
-        <li><strong>Bradley International Airport (BDL)</strong> — Windsor Locks, CT, approximately 120 miles west (~2 hour drive)</li>
-      </ul>
+      Once you get here, renting a car is a great option to get around, especially if you want to explore more of the area, but the venue itself is also accessible by public transportation (see below).
     </>,
   },
   {
@@ -34,14 +30,9 @@ const transitItems: TransitItem[] = [
   {
     q: 'Train (MBTA Commuter Rail)',
     a: <>
-      Halifax is served by the <strong>MBTA Kingston Line</strong>, which departs from <strong>South Station</strong> in Boston. The ride is approximately <strong>45–50 minutes</strong>, and Halifax is the second-to-last stop on the line. There are around 12 outbound trips on weekdays and 9 round trips on weekends.
+      The wedding is just a few minutes from the nearby Halifax MBTA Commuter Rail stop (Kingston Line), which is about 45 minutes from Boston. If you are coming from the city, you can use this train to access the venue from South Station in Boston.
       <br /><br />
-      Halifax station is located at <strong>6 Garden Rd, Halifax, MA</strong> — about 2 miles from The Lakehouse. You will need a rideshare (Uber or Lyft) from the station to the venue, which is a short 5-minute ride.
-      <br /><br />
-      For the full schedule and to plan your trip, visit the{' '}
-      <a href="https://www.mbta.com/schedules/CR-Kingston/timetable" target="_blank" rel="noopener noreferrer">
-        MBTA Kingston Line timetable
-      </a>. We recommend checking return train times before you arrive so you can plan your evening accordingly.
+      Please let us know if you will be taking public transportation so we can help coordinate your transportation to and from the train station and the venue.
     </>,
   },
   {
