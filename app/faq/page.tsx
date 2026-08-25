@@ -54,6 +54,8 @@ const faqs: FAQItem[] = [
     q: 'When is the RSVP deadline and how do I RSVP?',
     a: <>
       Please RSVP by March 1st using the <Link href="/rsvp">RSVP page</Link> on this website. We are collecting RSVPs electronically.
+      <br /><br />
+      Note: the RSVP link will not open up until formal invitations are mailed.
     </>,
   },
   {
