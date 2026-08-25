@@ -47,6 +47,7 @@ export default function AdminDashboard() {
   const [addError, setAddError] = useState('')
   const [addSuccess, setAddSuccess] = useState('')
   const [adding, setAdding] = useState(false)
+  const [partySearch, setPartySearch] = useState('')
   const [deadline, setDeadline] = useState<string>('')
   const [deadlineSaving, setDeadlineSaving] = useState(false)
   const [deadlineSaved, setDeadlineSaved] = useState(false)
@@ -325,6 +326,15 @@ export default function AdminDashboard() {
     fetchData()
   }
 
+  const partySearchTerm = partySearch.trim().toLowerCase()
+  const filteredParties = partySearchTerm
+    ? parties.filter(party =>
+        party.party_name.toLowerCase().includes(partySearchTerm) ||
+        party.code.toLowerCase().includes(partySearchTerm) ||
+        party.guests.some(g => g.name?.toLowerCase().includes(partySearchTerm))
+      )
+    : parties
+
   const totalInvited = parties.reduce((sum, p) => sum + p.max_guests, 0)
   const totalResponded = parties.filter(p => p.rsvp_submitted_at).length
   const totalAttending = parties.flatMap(p => p.guests).filter(g => g.attending).length
@@ -567,12 +577,33 @@ export default function AdminDashboard() {
         </button>
       </div>
 
+      <div className="meal-tally" style={{ marginBottom: '1.5rem' }}>
+        <p className="meal-tally-title">Search Parties</p>
+        <p style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '1rem', fontWeight: 300 }}>
+          Check here before adding a new party — search by party name, code, or guest name.
+        </p>
+        <input
+          className="edit-input"
+          style={{ marginBottom: 0 }}
+          placeholder="Search parties..."
+          value={partySearch}
+          onChange={e => setPartySearch(e.target.value)}
+        />
+        {partySearchTerm && (
+          <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '0.5rem' }}>
+            {filteredParties.length === 0
+              ? 'No matching parties found.'
+              : `${filteredParties.length} matching part${filteredParties.length === 1 ? 'y' : 'ies'}`}
+          </p>
+        )}
+      </div>
+
       <table className="party-table">
         <thead>
           <tr><th>Party</th><th>Status</th><th>Guests</th><th>Actions</th></tr>
         </thead>
         <tbody>
-          {parties.map(party => (
+          {filteredParties.map(party => (
             <tr key={party.id}>
               <td>
                 <div style={{ fontWeight: 400 }}>{party.party_name}</div>
