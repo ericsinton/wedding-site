@@ -12,7 +12,7 @@ type TransitItem = {
 
 const transitItems: TransitItem[] = [
   {
-    q: 'Flying',
+    q: 'Flying to the Area',
     a: <>
       For our guests who are flying into town for our wedding, we recommend flying into Boston Logan airport (BOS). It is likely the most convenient and inexpensive airport to fly into. The venue is about an hour south of the airport, but the South Shore traffic can get pretty bad (welcome to Boston…). Another airport option is TF Green in Providence (PVD), which is much smaller but also about an hour from the venue.
       <br /><br />
@@ -20,7 +20,7 @@ const transitItems: TransitItem[] = [
     </>,
   },
   {
-    q: 'Driving',
+    q: 'Driving to the Venue',
     a: <>
       The wedding and reception are located at the Lakehouse in Halifax, MA. The address is 550 Monponsett St, Halifax, MA 02338. There is plenty of on-site parking.
       <br /><br />
@@ -28,7 +28,7 @@ const transitItems: TransitItem[] = [
     </>,
   },
   {
-    q: 'Train (MBTA Commuter Rail)',
+    q: 'Traveling by Public Transit',
     a: <>
       The wedding is just a few minutes from the nearby Halifax MBTA Commuter Rail stop (Kingston Line), which is about 45 minutes from Boston. If you are coming from the city, you can use this train to access the venue from South Station in Boston.
       <br /><br />
