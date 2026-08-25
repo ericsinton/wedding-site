@@ -1,10 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getCode } from '../lib/useAuth'
 import Nav from '../components/Nav'
+
+const photos = [
+  { src: '/story-1.jpeg', objectPosition: 'center 30%' },
+  { src: '/story-2.jpeg', objectPosition: 'center 45%' },
+  { src: '/story-3.jpeg', objectPosition: 'center 25%' },
+  { src: '/story-4.jpeg', objectPosition: 'center 75%' },
+  { src: '/story-5.jpeg', objectPosition: 'center 40%' },
+  { src: '/story-6.jpeg', objectPosition: '35% 55%' },
+]
 
 export default function Home() {
   const router = useRouter()
@@ -71,13 +81,19 @@ export default function Home() {
         <Link href="/rsvp" className="btn-primary">RSVP</Link>
         <div style={{ marginTop: '4rem' }}>
           <div className="photo-grid">
-            <div className="photo-block" />
-            <div className="photo-block tall" />
-            <div className="photo-block" />
-            <div className="photo-block" />
-            <div className="photo-block" />
+            {photos.map((photo, i) => (
+              <div key={i} className="photo-block">
+                <Image
+                  src={photo.src}
+                  alt="Eric and Kate"
+                  fill
+                  sizes="(max-width: 600px) 50vw, 33vw"
+                  style={{ objectFit: 'cover', objectPosition: photo.objectPosition }}
+                  priority={i < 3}
+                />
+              </div>
+            ))}
           </div>
-          <p className="photo-label">Photos coming soon</p>
         </div>
       </section>
 
