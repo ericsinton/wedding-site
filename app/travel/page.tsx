@@ -14,7 +14,7 @@ type TransitItem = {
   a: React.ReactNode
 }
 
-const transitItems: TransitItem[] = [
+const getTransitItems = (invitedFriday: boolean): TransitItem[] => [
   {
     q: 'Flying to the Area',
     a: <>
@@ -38,6 +38,12 @@ const transitItems: TransitItem[] = [
       <a href="https://www.mbta.com/schedules/CR-Kingston/timetable" target="_blank" rel="noopener noreferrer">Kingston Line schedule</a>. We recommend checking return train times before you arrive so you can plan your evening accordingly.
       <br /><br />
       The segments between the train stations and venue/hotel are not walkable. Please let us know if you will be taking public transportation so we can help coordinate your transportation to and from the train station and the venue.
+      {invitedFriday && <>
+        <br /><br />
+        The Friday night dinner is also accessible by public transit. The venue is about a one mile walk from the train station. From South Station, take the Fall River/New Bedford Line to the Middleborough MBTA Commuter Rail stop (
+        <a href="https://www.mbta.com/schedules/CR-NewBedford/timetable" target="_blank" rel="noopener noreferrer">here&apos;s the train schedule</a>
+        {' '}to plan your trip).
+      </>}
     </>,
   },
   {
@@ -72,6 +78,8 @@ export default function Travel() {
   }, [router])
 
   if (!authed) return null
+
+  const transitItems = getTransitItems(invitedFriday)
 
   return (
     <>
