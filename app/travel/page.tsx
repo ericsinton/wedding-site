@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '../lib/supabase'
 import { getCode } from '../lib/useAuth'
 import Nav from '../components/Nav'
+
+const FRIDAY_MAP_SRC = 'https://www.google.com/maps/d/u/0/embed?mid=1h0vzOwyPCAB3iBBagAq9cJJQeIAD-ps&ehbc=2E312F&noprof=1'
+const GENERAL_MAP_SRC = 'https://www.google.com/maps/d/u/0/embed?mid=1TMnpb2kmV2ig4jKmu5vL5ZAgJiiOeN4&ehbc=2E312F&noprof=1'
 
 type TransitItem = {
   q: string
@@ -53,14 +57,18 @@ export default function Travel() {
   const router = useRouter()
   const [authed, setAuthed] = useState(false)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [invitedFriday, setInvitedFriday] = useState(false)
 
   useEffect(() => {
     const code = getCode()
     if (!code) {
       router.push('/')
-    } else {
-      setAuthed(true)
+      return
     }
+    setAuthed(true)
+    supabase
+      .from('guest_parties').select('invited_friday').eq('code', code).single()
+      .then(({ data }) => setInvitedFriday(!!data?.invited_friday))
   }, [router])
 
   if (!authed) return null
@@ -93,7 +101,7 @@ export default function Travel() {
 
         <div className="travel-map-wrap">
           <iframe
-            src="https://www.google.com/maps/d/embed?mid=1THMp9_s2-fiBwwkirhTK_jtUxIC5Lvw"
+            src={invitedFriday ? FRIDAY_MAP_SRC : GENERAL_MAP_SRC}
             width="100%"
             height="100%"
             style={{ border: 0 }}
