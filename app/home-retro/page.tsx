@@ -416,7 +416,7 @@ export default function HomeRetro() {
                   </tr>
                   <tr>
                     <td><b>Dress Code</b></td>
-                    <td>Garden Formal (Black tie optional)</td>
+                    <td>Dressy Casual<br />Please dress comfortably</td>
                   </tr>
                 </tbody>
               </table>
