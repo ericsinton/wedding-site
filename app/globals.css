@@ -891,6 +891,23 @@ footer {
   color: var(--gold);
 }
 
+.story-text {
+  width: 100%;
+  max-width: 680px;
+  font-size: 15px;
+  line-height: 1.9;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.story-text p {
+  margin-bottom: 1.5rem;
+}
+
+.story-text p:last-child {
+  margin-bottom: 0;
+}
+
 .story-grid {
   width: 100%;
   max-width: 760px;
