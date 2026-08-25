@@ -82,10 +82,6 @@ const faqs: FAQItem[] = [
     a: 'There are entrée choices to accommodate allergies and dietary restrictions, and cocktail hour appetizers will be clearly marked. Please specify your needs when completing your RSVP so we may coordinate with our caterer. We kindly ask that you mention your name and dietary restriction to your server during the reception.',
   },
   {
-    q: 'Are children welcome?',
-    a: 'The names of children invited to attend are listed on your invitation — unfortunately no additional children can be accommodated.',
-  },
-  {
     q: 'I still have a question. How can I reach you?',
     a: <>
       Please reach out to us at{' '}
