@@ -30,9 +30,10 @@ const transitItems: TransitItem[] = [
   {
     q: 'Traveling by Public Transit',
     a: <>
-      The wedding is just a few minutes from the nearby Halifax MBTA Commuter Rail stop (Kingston Line), which is about 45 minutes from Boston. If you are coming from the city, you can use this train to access the venue from South Station in Boston.
+      The wedding is a 5-minute drive from the nearby Halifax MBTA Commuter Rail stop, which is about a 45 minute ride from South Station in Boston. The hotels mentioned above are just south of the venue near the Kingston MBTA Commuter Rail stop. Both of these stations are on the Kingston Line. For the full schedule and to plan your trip, check out the{' '}
+      <a href="https://www.mbta.com/schedules/CR-Kingston/timetable" target="_blank" rel="noopener noreferrer">Kingston Line schedule</a>. We recommend checking return train times before you arrive so you can plan your evening accordingly.
       <br /><br />
-      Please let us know if you will be taking public transportation so we can help coordinate your transportation to and from the train station and the venue.
+      The segments between the train stations and venue/hotel are not walkable. Please let us know if you will be taking public transportation so we can help coordinate your transportation to and from the train station and the venue.
     </>,
   },
   {
