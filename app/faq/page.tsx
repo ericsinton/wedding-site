@@ -79,7 +79,7 @@ const faqs: FAQItem[] = [
   },
   {
     q: 'What if I have an allergy or dietary restriction?',
-    a: 'Please note any allergies or dietary restrictions in your RSVP. There are entrée choices to accommodate allergies and dietary restrictions, and cocktail hour appetizers will be clearly marked. We will make note of your dietary request – once seated please mention your name and restriction to your server so they can serve you smoothly.',
+    a: 'There are entrée choices to accommodate allergies and dietary restrictions, and cocktail hour appetizers will be clearly marked. Please specify your needs when completing your RSVP so we may coordinate with our caterer. We kindly ask that you mention your name and dietary restriction to your server during the reception.',
   },
   {
     q: 'Are children welcome?',
