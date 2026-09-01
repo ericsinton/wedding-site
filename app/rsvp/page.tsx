@@ -310,6 +310,9 @@ export default function RSVPPage() {
                   {party.invited_sunday && (
                     <div>
                       <p className="guest-slot-label">Sunday Breakfast — April 4</p>
+                      <p style={{ fontSize: '14px', color: 'var(--charcoal)', fontWeight: 300, marginTop: '-0.5rem', marginBottom: '0.75rem' }}>
+                        Join us for a farewell continental breakfast anytime between 8AM and 10AM. Stop by whenever you wake up to grab a bite and say goodbye to the Bride and Groom before you head out.
+                      </p>
                       {isLocked ? (
                         <p style={{ fontSize: '14px', color: 'var(--charcoal)', fontWeight: 300 }}>
                           {guest.attending_sunday === true ? 'Attending' : guest.attending_sunday === false ? 'Unable to attend' : '—'}
