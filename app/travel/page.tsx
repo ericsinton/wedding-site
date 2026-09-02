@@ -49,12 +49,10 @@ const getTransitItems = (invitedFriday: boolean): TransitItem[] => [
   {
     q: 'Where to Stay',
     a: <>
-      There are many hotels in the neighboring town of Plymouth. There is a group of hotels right next to each other that many of us will be staying in that includes the{' '}
+      There are many hotels in the neighboring town of Plymouth. There is a cluster of hotels that most of us (including the wedding party) will be staying in that includes the{' '}
       <a href="https://www.cambriaplymouth.com" target="_blank" rel="noopener noreferrer">Cambria Hotel</a>, the{' '}
       <a href="https://www.hilton.com/en/hotels/pymhshx-hampton-suites-plymouth" target="_blank" rel="noopener noreferrer">Hampton Inn and Suites</a>, and the{' '}
-      <a href="https://www.marriott.com/en-us/hotels/ewbpf-fairfield-inn-and-suites-plymouth/overview/" target="_blank" rel="noopener noreferrer">Fairfield by Marriott Inn and Suites</a> in Plymouth.
-      <br /><br />
-      If you are coming from out of town and want to connect with us about staying with one of our nearby friends or family, or otherwise have any questions about where to stay, please contact Eric or Kate directly by email (<a href="mailto:ericsinton@gmail.com">ericsinton@gmail.com</a> or <a href="mailto:k8lamberti@gmail.com">k8lamberti@gmail.com</a>).
+      <a href="https://www.marriott.com/en-us/hotels/ewbpf-fairfield-inn-and-suites-plymouth/overview/" target="_blank" rel="noopener noreferrer">Fairfield by Marriott Inn and Suites</a>. All are conveniently located in Plymouth right off Route 44 and near the Kingston MBTA Station (if you are taking public transportation, see information above).
     </>,
   },
 ]
