@@ -370,7 +370,7 @@ export default function RSVPPage() {
             <div className="confirmed-icon">✦</div>
             <h1 className="confirmed-heading">RSVP Coming Soon</h1>
             <p className="confirmed-body">
-              Please wait for your mailed invite with instructions, but we kindly ask that you let us know early if you are unable to attend.
+              We aren&apos;t ready for RSVPs quite yet! Please wait for your mailed invite with instructions, however, we kindly ask that you let us know early if you are unable to attend.
             </p>
             <Link href="/home" className="btn-primary">Back to Home</Link>
           </div>
